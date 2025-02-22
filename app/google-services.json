@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "672265150652",
+    "project_id": "feels-like-451222",
+    "storage_bucket": "feels-like-451222.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:672265150652:android:373cf7318e4091f8f170b9",
+        "android_client_info": {
+          "package_name": "com.iyehuda.feelslike"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_id2jtjzW3pj886Jo_I8Mg-oQWMrjA2c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

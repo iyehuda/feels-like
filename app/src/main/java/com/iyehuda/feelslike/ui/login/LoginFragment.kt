@@ -13,6 +13,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.logEvent
+import com.google.firebase.ktx.Firebase
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.databinding.FragmentLoginBinding
@@ -50,12 +54,22 @@ class LoginFragment : Fragment() {
         loginViewModel.loginResult.observe(viewLifecycleOwner, Observer { loginResult ->
             loginResult ?: return@Observer
 
+            Firebase.analytics.logEvent(FirebaseAnalytics.Event.LOGIN) {
+                param(FirebaseAnalytics.Param.METHOD, "email")
+                param(FirebaseAnalytics.Param.SUCCESS, (loginResult.success != null).toString())
+                param(FirebaseAnalytics.Param.SCREEN_NAME, "login")
+
+                loginResult.error?.let {
+                    param("error", getString(it))
+                }
+            }
+
             binding.loadingProgressBar.visibility = View.GONE
             loginResult.error?.let {
-                showLoginFailed(it)
+                onLoginFailed(it)
             }
             loginResult.success?.let {
-                updateUiWithUser(it)
+                onLoginSucceeded(it)
             }
         })
 
@@ -73,6 +87,11 @@ class LoginFragment : Fragment() {
             false
         }
         binding.loginButton.setOnClickListener {
+            Firebase.analytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT) {
+                param(FirebaseAnalytics.Param.ITEM_ID, "login_button")
+                param(FirebaseAnalytics.Param.CONTENT_TYPE, "button")
+                param(FirebaseAnalytics.Param.SCREEN_NAME, "login")
+            }
             performLogin()
         }
     }
@@ -84,12 +103,12 @@ class LoginFragment : Fragment() {
         )
     }
 
-    private fun updateUiWithUser(model: UserDetails) {
+    private fun onLoginSucceeded(model: UserDetails) {
         displayToast(getString(R.string.welcome, model.displayName))
         findNavController().navigate(R.id.action_successful_login)
     }
 
-    private fun showLoginFailed(@StringRes errorString: Int) = displayToast(getString(errorString))
+    private fun onLoginFailed(@StringRes errorString: Int) = displayToast(getString(errorString))
 
     private fun displayToast(message: String) {
         context?.applicationContext?.let { appContext ->
