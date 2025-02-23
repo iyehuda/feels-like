@@ -32,16 +32,13 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.navigation_login -> {
-                    navView.visibility = View.GONE
-                }
+        val screensWithoutNavBar = setOf(
+            R.id.navigation_login,
+        )
 
-                else -> {
-                    navView.visibility = View.VISIBLE
-                }
-            }
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            navView.visibility =
+                if (screensWithoutNavBar.contains(destination.id)) View.GONE else View.VISIBLE
         }
     }
 }

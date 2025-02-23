@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.iyehuda.feelslike.R
+import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.databinding.FragmentMyProfileBinding
 import com.iyehuda.feelslike.ui.ViewModelFactory
 
@@ -24,26 +25,33 @@ class MyProfileFragment : Fragment() {
         _binding = FragmentMyProfileBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        myProfileViewModel.userDetails.observe(viewLifecycleOwner) { maybeUser ->
-            maybeUser?.let { user ->
-                binding.emailTextView.text = getString(R.string.profile_email_text, user.email)
-                binding.displayNameTextView.text =
-                    getString(R.string.profile_display_name_text, user.displayName)
-                binding.photoUrlTextView.text =
-                    getString(R.string.profile_photo_url_text, user.photoUrl)
+        myProfileViewModel.userDetails.observe(viewLifecycleOwner) { user ->
+            user?.let {
+                updateUserView(it)
             }
         }
 
         binding.logoutButton.setOnClickListener {
-            myProfileViewModel.logout()
-            findNavController().popBackStack()
+            logout()
         }
 
         return root
     }
 
+    private fun updateUserView(user: UserDetails) {
+        binding.emailTextView.text = getString(R.string.profile_email_text, user.email)
+        binding.displayNameTextView.text =
+            getString(R.string.profile_display_name_text, user.displayName)
+        binding.photoUrlTextView.text = getString(R.string.profile_photo_url_text, user.photoUrl)
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun logout() {
+        myProfileViewModel.logout()
+        findNavController().popBackStack()
     }
 }

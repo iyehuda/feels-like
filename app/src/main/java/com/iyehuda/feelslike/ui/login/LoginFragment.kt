@@ -11,7 +11,6 @@ import androidx.annotation.StringRes
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
@@ -39,39 +38,15 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        loginViewModel.loginFormState.observe(viewLifecycleOwner, Observer { loginFormState ->
-            loginFormState ?: return@Observer
+        loginViewModel.loginFormState.observe(viewLifecycleOwner) {
+            onLoginFormUpdated(it)
+        }
 
-            binding.loginButton.isEnabled = loginFormState.isDataValid
-            loginFormState.emailError?.let {
-                binding.emailEditText.error = getString(it)
+        loginViewModel.loginResult.observe(viewLifecycleOwner) {
+            it?.let {
+                onLoginResult(it)
             }
-            loginFormState.passwordError?.let {
-                binding.passwordEditText.error = getString(it)
-            }
-        })
-
-        loginViewModel.loginResult.observe(viewLifecycleOwner, Observer { loginResult ->
-            loginResult ?: return@Observer
-
-            Firebase.analytics.logEvent(FirebaseAnalytics.Event.LOGIN) {
-                param(FirebaseAnalytics.Param.METHOD, "email")
-                param(FirebaseAnalytics.Param.SUCCESS, (loginResult.success != null).toString())
-                param(FirebaseAnalytics.Param.SCREEN_NAME, "login")
-
-                loginResult.error?.let {
-                    param("error", getString(it))
-                }
-            }
-
-            binding.loadingProgressBar.visibility = View.GONE
-            loginResult.error?.let {
-                onLoginFailed(it)
-            }
-            loginResult.success?.let {
-                onLoginSucceeded(it)
-            }
-        })
+        }
 
         val afterTextChangedListener = { _: Editable? ->
             loginViewModel.loginDataChanged(
@@ -96,11 +71,43 @@ class LoginFragment : Fragment() {
         }
     }
 
+    private fun onLoginFormUpdated(loginFormState: LoginFormState) {
+        binding.loginButton.isEnabled = loginFormState.isDataValid
+
+        if (loginFormState.emailError != null) {
+            binding.emailEditText.error = getString(loginFormState.emailError)
+        } else {
+            loginFormState.passwordError?.let {
+                binding.passwordEditText.error = getString(it)
+            }
+        }
+    }
+
     private fun performLogin() {
         binding.loadingProgressBar.visibility = View.VISIBLE
         loginViewModel.login(
             binding.emailEditText.text.toString(), binding.passwordEditText.text.toString()
         )
+    }
+
+    private fun onLoginResult(loginResult: LoginResult) {
+        Firebase.analytics.logEvent(FirebaseAnalytics.Event.LOGIN) {
+            param(FirebaseAnalytics.Param.METHOD, "email")
+            param(FirebaseAnalytics.Param.SUCCESS, (loginResult.success != null).toString())
+            param(FirebaseAnalytics.Param.SCREEN_NAME, "login")
+
+            loginResult.error?.let {
+                param("error", getString(it))
+            }
+        }
+
+        binding.loadingProgressBar.visibility = View.GONE
+        loginResult.error?.let {
+            onLoginFailed(it)
+        }
+        loginResult.success?.let {
+            onLoginSucceeded(it)
+        }
     }
 
     private fun onLoginSucceeded(model: UserDetails) {
