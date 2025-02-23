@@ -39,20 +39,24 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
     }
 
     fun loginDataChanged(email: String, password: String) {
-        if (!isEmailNameValid(email)) {
-            _loginForm.value = LoginFormState(emailError = R.string.invalid_email)
-        } else if (!isPasswordValid(password)) {
-            _loginForm.value = LoginFormState(passwordError = R.string.invalid_password)
-        } else {
-            _loginForm.value = LoginFormState(isDataValid = true)
+        val emailError = validateEmail(email)
+        val passwordError = validatePassword(password)
+        val empty = email.isEmpty() && password.isEmpty()
+        val error = emailError != null || passwordError != null
+
+        _loginForm.value = when {
+            empty -> LoginFormState(isDataValid = false)
+            error -> LoginFormState(
+                isDataValid = false, emailError = emailError, passwordError = passwordError
+            )
+
+            else -> LoginFormState(isDataValid = true)
         }
     }
 
-    private fun isEmailNameValid(email: String): Boolean {
-        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
-    }
+    private fun validateEmail(email: String): Int? =
+        if (Patterns.EMAIL_ADDRESS.matcher(email).matches()) null else R.string.invalid_email
 
-    private fun isPasswordValid(password: String): Boolean {
-        return password.length > 5
-    }
+    private fun validatePassword(password: String): Int? =
+        if (password.length > 5) null else R.string.invalid_password
 }
