@@ -2,18 +2,20 @@ package com.iyehuda.feelslike.data
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.data.utils.Result
 
-/**
- * Class that requests authentication and user information from the remote data source and
- * maintains an in-memory cache of login status and user credentials information.
- */
 class AuthRepository(val dataSource: AuthDataSource) {
-    private val _userLogin = MutableLiveData<Result<UserDetails>?>()
+    private val _userLogin = MutableLiveData<Result<UserDetails>?>().apply {
+        Firebase.auth.currentUser?.let {
+            value = Result.Success(UserDetails.fromUser(it))
+        }
+    }
     val userLogin: LiveData<Result<UserDetails>?> = _userLogin
 
-    suspend fun logout() {
+    fun logout() {
         dataSource.logout()
         _userLogin.value = null
     }

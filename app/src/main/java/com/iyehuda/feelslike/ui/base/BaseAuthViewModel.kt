@@ -1,15 +1,12 @@
 package com.iyehuda.feelslike.ui.base
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import androidx.lifecycle.viewModelScope
 import com.iyehuda.feelslike.data.AuthRepository
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.data.utils.Result
-import kotlinx.coroutines.launch
 
-abstract class BaseAuthViewModel(val authRepository: AuthRepository) : ViewModel() {
+abstract class BaseAuthViewModel(val authRepository: AuthRepository) : BaseViewModel() {
     val userDetails: LiveData<UserDetails?> = authRepository.userLogin.map { result ->
         when (result) {
             is Result.Success -> {
@@ -23,7 +20,7 @@ abstract class BaseAuthViewModel(val authRepository: AuthRepository) : ViewModel
     }
 
     fun logout() {
-        viewModelScope.launch {
+        safeLaunch {
             authRepository.logout()
         }
     }

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.databinding.FragmentMyProfileBinding
 import com.iyehuda.feelslike.ui.ViewModelFactory
 
@@ -23,18 +24,19 @@ class MyProfileFragment : Fragment() {
         _binding = FragmentMyProfileBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        myProfileViewModel.userDetails.observe(viewLifecycleOwner) {
-            if (it == null) {
-                findNavController().popBackStack()
+        myProfileViewModel.userDetails.observe(viewLifecycleOwner) { maybeUser ->
+            maybeUser?.let { user ->
+                binding.emailTextView.text = getString(R.string.profile_email_text, user.email)
+                binding.displayNameTextView.text =
+                    getString(R.string.profile_display_name_text, user.displayName)
+                binding.photoUrlTextView.text =
+                    getString(R.string.profile_photo_url_text, user.photoUrl)
             }
-        }
-
-        myProfileViewModel.text.observe(viewLifecycleOwner) {
-            binding.textMyProfile.text = it
         }
 
         binding.logoutButton.setOnClickListener {
             myProfileViewModel.logout()
+            findNavController().popBackStack()
         }
 
         return root
