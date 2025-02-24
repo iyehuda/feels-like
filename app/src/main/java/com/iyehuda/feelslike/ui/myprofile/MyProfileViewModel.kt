@@ -1,12 +1,6 @@
 package com.iyehuda.feelslike.ui.myprofile
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import com.iyehuda.feelslike.data.AuthRepository
+import com.iyehuda.feelslike.ui.base.BaseAuthViewModel
 
-class MyProfileViewModel : ViewModel() {
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is my profile Fragment"
-    }
-    val text: LiveData<String> = _text
-}
+class MyProfileViewModel(authRepository: AuthRepository) : BaseAuthViewModel(authRepository)

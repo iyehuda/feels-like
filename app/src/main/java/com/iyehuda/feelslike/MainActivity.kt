@@ -1,12 +1,13 @@
 package com.iyehuda.feelslike
 
 import android.os.Bundle
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.iyehuda.feelslike.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -19,9 +20,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val navView: BottomNavigationView = binding.navView
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment_activity_main) as NavHostFragment
-        val navController = navHostFragment.navController
+        val navController =
+            binding.navHostFragmentActivityMain.getFragment<NavHostFragment>().navController
+
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.navigation_home, R.id.navigation_map, R.id.navigation_myprofile
@@ -30,5 +31,14 @@ class MainActivity : AppCompatActivity() {
 
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        val screensWithoutNavBar = setOf(
+            R.id.navigation_login,
+        )
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            navView.visibility =
+                if (screensWithoutNavBar.contains(destination.id)) View.GONE else View.VISIBLE
+        }
     }
 }
