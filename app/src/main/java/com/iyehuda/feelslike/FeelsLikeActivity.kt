@@ -11,7 +11,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.iyehuda.feelslike.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class FeelsLikeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
 
@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity() {
         val screensWithoutNavBar = setOf(
             R.id.splash_screen,
             R.id.login_screen,
+            R.id.signup_screen,
         )
 
         navController.addOnDestinationChangedListener { _, destination, _ ->

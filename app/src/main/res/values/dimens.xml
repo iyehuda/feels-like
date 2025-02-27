@@ -4,4 +4,6 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="fragment_horizontal_margin">16dp</dimen>
     <dimen name="fragment_vertical_margin">16dp</dimen>
+    <dimen name="avatar_image_height">128dp</dimen>
+    <dimen name="avatar_image_width">128dp</dimen>
 </resources>

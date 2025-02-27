@@ -69,6 +69,10 @@ class LoginFragment : Fragment() {
             }
             performLogin()
         }
+
+        binding.signupLink.setOnClickListener {
+            findNavController().navigate(R.id.action_go_to_signup)
+        }
     }
 
     private fun onLoginFormUpdated(loginFormState: LoginFormState) {
@@ -111,7 +115,7 @@ class LoginFragment : Fragment() {
     }
 
     private fun onLoginSucceeded(model: UserDetails) {
-        displayToast(getString(R.string.welcome, model.displayName))
+        displayToast(getString(R.string.login_greeting, model.displayName))
         findNavController().navigate(R.id.action_sign_in)
     }
 
