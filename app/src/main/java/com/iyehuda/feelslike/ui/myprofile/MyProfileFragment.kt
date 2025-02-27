@@ -52,6 +52,6 @@ class MyProfileFragment : Fragment() {
 
     private fun logout() {
         myProfileViewModel.logout()
-        findNavController().popBackStack()
+        findNavController().navigate(R.id.action_logout)
     }
 }

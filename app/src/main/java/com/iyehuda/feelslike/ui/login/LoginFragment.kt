@@ -12,17 +12,17 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
-import com.google.firebase.ktx.Firebase
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.databinding.FragmentLoginBinding
 import com.iyehuda.feelslike.ui.ViewModelFactory
 
 class LoginFragment : Fragment() {
-    private val loginViewModel: LoginViewModel by viewModels { ViewModelFactory() }
+    private val viewModel: LoginViewModel by viewModels { ViewModelFactory() }
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
@@ -38,18 +38,18 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        loginViewModel.loginFormState.observe(viewLifecycleOwner) {
+        viewModel.loginFormState.observe(viewLifecycleOwner) {
             onLoginFormUpdated(it)
         }
 
-        loginViewModel.loginResult.observe(viewLifecycleOwner) {
+        viewModel.loginResult.observe(viewLifecycleOwner) {
             it?.let {
                 onLoginResult(it)
             }
         }
 
         val afterTextChangedListener = { _: Editable? ->
-            loginViewModel.loginDataChanged(
+            viewModel.loginDataChanged(
                 binding.emailEditText.text.toString(), binding.passwordEditText.text.toString()
             )
         }
@@ -85,7 +85,7 @@ class LoginFragment : Fragment() {
 
     private fun performLogin() {
         binding.loadingProgressBar.visibility = View.VISIBLE
-        loginViewModel.login(
+        viewModel.login(
             binding.emailEditText.text.toString(), binding.passwordEditText.text.toString()
         )
     }
@@ -112,7 +112,7 @@ class LoginFragment : Fragment() {
 
     private fun onLoginSucceeded(model: UserDetails) {
         displayToast(getString(R.string.welcome, model.displayName))
-        findNavController().navigate(R.id.action_successful_login)
+        findNavController().navigate(R.id.action_sign_in)
     }
 
     private fun onLoginFailed(@StringRes errorString: Int) = displayToast(getString(errorString))

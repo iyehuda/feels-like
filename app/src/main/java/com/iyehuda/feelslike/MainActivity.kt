@@ -3,6 +3,7 @@ package com.iyehuda.feelslike
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -12,6 +13,7 @@ import com.iyehuda.feelslike.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,25 +22,34 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val navView: BottomNavigationView = binding.navView
-        val navController =
+        navController =
             binding.navHostFragmentActivityMain.getFragment<NavHostFragment>().navController
 
         val appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.navigation_home, R.id.navigation_map, R.id.navigation_myprofile
-            )
+            setOf(R.id.home_screen, R.id.login_screen)
         )
 
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
         val screensWithoutNavBar = setOf(
-            R.id.navigation_login,
+            R.id.splash_screen,
+            R.id.login_screen,
         )
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             navView.visibility =
                 if (screensWithoutNavBar.contains(destination.id)) View.GONE else View.VISIBLE
+
+            if (destination.id != R.id.splash_screen) {
+                supportActionBar?.show()
+            } else {
+                supportActionBar?.hide()
+            }
         }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp() || super.onSupportNavigateUp()
     }
 }

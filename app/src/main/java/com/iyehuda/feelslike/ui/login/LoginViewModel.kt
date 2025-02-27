@@ -3,15 +3,13 @@ package com.iyehuda.feelslike.ui.login
 import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
-import androidx.lifecycle.viewModelScope
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.AuthRepository
 import com.iyehuda.feelslike.data.utils.Result
-import kotlinx.coroutines.launch
+import com.iyehuda.feelslike.ui.base.BaseViewModel
 
-class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
+class LoginViewModel(private val authRepository: AuthRepository) : BaseViewModel() {
     private val _loginForm = MutableLiveData<LoginFormState>()
     val loginFormState: LiveData<LoginFormState> = _loginForm
 
@@ -34,7 +32,7 @@ class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
     fun login(
         email: String,
         password: String,
-    ) = viewModelScope.launch {
+    ) = safeLaunch {
         authRepository.login(email, password)
     }
 
