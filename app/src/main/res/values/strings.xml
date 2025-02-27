@@ -3,23 +3,34 @@
     <string name="title_home">Home</string>
     <string name="title_map">Map</string>
     <string name="title_myprofile">My Profile</string>
-    <!-- Strings related to login -->
+
+    <!-- Strings related to login & signup -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
+    <string name="prompt_display_name">Display Name</string>
     <string name="action_sign_in">Sign In</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="welcome">"Welcome, %1$s!"</string>
+    <string name="login_greeting">"Welcome back, %1$s!"</string>
     <string name="invalid_email">Not an email address</string>
-    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="invalid_password">Password must be >=6 characters</string>
+    <string name="invalid_display_name">Display name must be >=2 characters</string>
     <string name="login_failed">"Failed to login, try again later"</string>
     <string name="login_invalid_credentials">"Invalid email or password"</string>
     <string name="feels_like_logo">Feels Like Logo</string>
     <string name="login_title">Welcome Back</string>
     <string name="login_subtitle">Sign in to continue</string>
     <string name="signup_link_text">Don\'t have an account? Sign Up</string>
-    <string name="logout_button_text">Logout</string>
+    <string name="action_sign_up">Create Account</string>
+    <string name="signup_greeting">"Welcome, %1$s!"</string>
+    <string name="signup_failed">"Failed to signup, try again later"</string>
+    <string name="signup_title">Welcome to Feels Like</string>
+    <string name="signup_subtitle">Sign up to continue</string>
+    <string name="signup_email_taken">"Email already exists, choose another email"</string>
+    <string name="avatar_input">Choose your avatar</string>
+
     <!-- Strings related to profile -->
     <string name="profile_email_text">"Email: %1$s"</string>
     <string name="profile_display_name_text">"Display Name: %1$s"</string>
     <string name="profile_photo_url_text">"Photo URL: %1$s"</string>
+    <string name="logout_button_text">Logout</string>
+    <string name="avatar_image">User avatar</string>
 </resources>

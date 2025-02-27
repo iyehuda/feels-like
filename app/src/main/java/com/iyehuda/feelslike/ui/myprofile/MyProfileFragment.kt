@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.databinding.FragmentMyProfileBinding
@@ -39,10 +40,10 @@ class MyProfileFragment : Fragment() {
     }
 
     private fun updateUserView(user: UserDetails) {
+        Glide.with(this).load(user.photoUrl).circleCrop().into(binding.avatarImageView)
         binding.emailTextView.text = getString(R.string.profile_email_text, user.email)
         binding.displayNameTextView.text =
             getString(R.string.profile_display_name_text, user.displayName)
-        binding.photoUrlTextView.text = getString(R.string.profile_photo_url_text, user.photoUrl)
     }
 
     override fun onDestroyView() {

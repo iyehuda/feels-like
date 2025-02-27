@@ -35,6 +35,22 @@
             app:destination="@id/home_screen"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_go_to_signup"
+            app:destination="@id/signup_screen" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/signup_screen"
+        android:name="com.iyehuda.feelslike.ui.signup.SignupFragment"
+        android:label="Signup"
+        tools:layout="@layout/fragment_signup">
+
+        <action
+            android:id="@+id/action_sign_up"
+            app:destination="@id/home_screen"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
