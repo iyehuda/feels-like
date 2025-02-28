@@ -10,12 +10,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.databinding.FragmentSplashBinding
-import com.iyehuda.feelslike.ui.ViewModelFactory
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class SplashFragment : Fragment() {
-    private val viewModel: SplashViewModel by viewModels { ViewModelFactory() }
+    private val viewModel: SplashViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,

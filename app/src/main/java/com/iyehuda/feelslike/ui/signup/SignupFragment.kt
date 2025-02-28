@@ -20,11 +20,12 @@ import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.data.utils.explainableErrorOrNull
 import com.iyehuda.feelslike.databinding.FragmentSignupBinding
-import com.iyehuda.feelslike.ui.ViewModelFactory
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class SignupFragment : Fragment() {
-    private val viewModel: SignupViewModel by viewModels { ViewModelFactory() }
+    private val viewModel: SignupViewModel by viewModels()
     private var _binding: FragmentSignupBinding? = null
     private val binding get() = _binding!!
 

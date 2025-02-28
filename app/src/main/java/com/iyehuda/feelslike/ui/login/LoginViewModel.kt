@@ -7,8 +7,12 @@ import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.AuthRepository
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.ui.base.BaseViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class LoginViewModel(private val authRepository: AuthRepository) : BaseViewModel() {
+@HiltViewModel
+class LoginViewModel @Inject constructor(private val authRepository: AuthRepository) :
+    BaseViewModel() {
     private val _loginForm = MutableLiveData<LoginFormState>()
     val loginFormState: LiveData<LoginFormState> = _loginForm
 
