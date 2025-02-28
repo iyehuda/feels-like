@@ -78,12 +78,11 @@ class LoginFragment : Fragment() {
     private fun onLoginFormUpdated(loginFormState: LoginFormState) {
         binding.loginButton.isEnabled = loginFormState.isDataValid
 
-        if (loginFormState.emailError != null) {
-            binding.emailEditText.error = getString(loginFormState.emailError)
-        } else {
-            loginFormState.passwordError?.let {
-                binding.passwordEditText.error = getString(it)
-            }
+        loginFormState.emailError?.let {
+            binding.emailEditText.error = getString(it)
+        }
+        loginFormState.passwordError?.let {
+            binding.passwordEditText.error = getString(it)
         }
     }
 
