@@ -10,22 +10,24 @@ import com.google.firebase.storage.storage
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.data.utils.ExplainableException
-import com.iyehuda.feelslike.data.utils.Result
 import kotlinx.coroutines.tasks.await
 
 class AuthDataSource {
     fun getUser() = Firebase.auth.currentUser
 
-    // TODO: Use kotlin builtin Result
     suspend fun login(email: String, password: String): Result<UserDetails> {
         try {
             val auth = Firebase.auth.signInWithEmailAndPassword(email, password).await()
 
-            return Result.Success(UserDetails.fromUser(auth.user!!))
+            return Result.success(UserDetails.fromUser(auth.user!!))
         } catch (e: FirebaseAuthInvalidCredentialsException) {
-            return Result.Error(ExplainableException(R.string.login_invalid_credentials, cause = e))
+            return Result.failure(
+                ExplainableException(
+                    R.string.login_invalid_credentials, cause = e
+                )
+            )
         } catch (e: Throwable) {
-            return Result.Error(ExplainableException(R.string.login_failed, cause = e))
+            return Result.failure(ExplainableException(R.string.login_failed, cause = e))
         }
     }
 
@@ -54,11 +56,11 @@ class AuthDataSource {
                 photoUri = downloadUrl
             }).await()
 
-            return Result.Success(UserDetails.fromUser(user))
+            return Result.success(UserDetails.fromUser(user))
         } catch (e: FirebaseAuthUserCollisionException) {
-            return Result.Error(ExplainableException(R.string.signup_email_taken, cause = e))
+            return Result.failure(ExplainableException(R.string.signup_email_taken, cause = e))
         } catch (e: Throwable) {
-            return Result.Error(ExplainableException(R.string.signup_failed, cause = e))
+            return Result.failure(ExplainableException(R.string.signup_failed, cause = e))
         }
     }
 }

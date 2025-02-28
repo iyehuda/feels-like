@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.AuthRepository
-import com.iyehuda.feelslike.data.utils.Result
+import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.ui.base.BaseViewModel
 
 class LoginViewModel(private val authRepository: AuthRepository) : BaseViewModel() {
@@ -15,23 +15,10 @@ class LoginViewModel(private val authRepository: AuthRepository) : BaseViewModel
     fun login(
         email: String,
         password: String,
-        callback: (LoginResult) -> Unit,
+        callback: (Result<UserDetails>) -> Unit,
     ) = safeLaunch {
-        val loginResult = when (val result = authRepository.login(email, password)) {
-            is Result.Success -> {
-                LoginResult(success = result.data)
-            }
-
-            is Result.Error -> {
-                LoginResult(error = result.exception.errorStringRes)
-            }
-
-            else -> {
-                LoginResult()
-            }
-        }
-
-        callback(loginResult)
+        val result = authRepository.login(email, password)
+        callback(result)
     }
 
     fun loginDataChanged(email: String, password: String) {

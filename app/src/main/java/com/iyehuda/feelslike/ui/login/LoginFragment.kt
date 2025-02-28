@@ -12,12 +12,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.firebase.Firebase
-import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.analytics.analytics
-import com.google.firebase.analytics.logEvent
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
+import com.iyehuda.feelslike.data.utils.explainableErrorOrNull
 import com.iyehuda.feelslike.databinding.FragmentLoginBinding
 import com.iyehuda.feelslike.ui.ViewModelFactory
 import kotlinx.coroutines.launch
@@ -51,12 +48,7 @@ class LoginFragment : Fragment() {
         binding.emailEditText.doAfterTextChanged(afterTextChangedListener)
         binding.passwordEditText.doAfterTextChanged(afterTextChangedListener)
         binding.loginButton.setOnClickListener {
-            Firebase.analytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT) {
-                param(FirebaseAnalytics.Param.ITEM_ID, "login_button")
-                param(FirebaseAnalytics.Param.CONTENT_TYPE, "button")
-                param(FirebaseAnalytics.Param.SCREEN_NAME, "login")
-            }
-            performLogin()
+            login()
         }
 
         binding.signupLink.setOnClickListener {
@@ -75,7 +67,7 @@ class LoginFragment : Fragment() {
         }
     }
 
-    private fun performLogin() {
+    private fun login() {
         binding.loadingProgressBar.visibility = View.VISIBLE
         viewModel.login(
             binding.emailEditText.text.toString(), binding.passwordEditText.text.toString()
@@ -86,22 +78,12 @@ class LoginFragment : Fragment() {
         }
     }
 
-    private fun onLoginResult(loginResult: LoginResult) {
-        Firebase.analytics.logEvent(FirebaseAnalytics.Event.LOGIN) {
-            param(FirebaseAnalytics.Param.METHOD, "email")
-            param(FirebaseAnalytics.Param.SUCCESS, (loginResult.success != null).toString())
-            param(FirebaseAnalytics.Param.SCREEN_NAME, "login")
-
-            loginResult.error?.let {
-                param("error", getString(it))
-            }
-        }
-
+    private fun onLoginResult(loginResult: Result<UserDetails>) {
         binding.loadingProgressBar.visibility = View.GONE
-        loginResult.error?.let {
+        loginResult.explainableErrorOrNull()?.let {
             onLoginFailed(it)
         }
-        loginResult.success?.let {
+        loginResult.getOrNull()?.let {
             onLoginSucceeded(it)
         }
     }

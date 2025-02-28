@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.iyehuda.feelslike.data.model.UserDetails
-import com.iyehuda.feelslike.data.utils.Result
 
 class AuthRepository(val dataSource: AuthDataSource) {
     private val _userDetails = MutableLiveData<UserDetails?>().apply {
@@ -31,8 +30,8 @@ class AuthRepository(val dataSource: AuthDataSource) {
     }
 
     private fun onAuth(authResult: Result<UserDetails>) {
-        if (authResult is Result.Success) {
-            _userDetails.value = authResult.data
+        if (authResult.isSuccess) {
+            _userDetails.value = authResult.getOrThrow()
         }
     }
 }
