@@ -16,11 +16,12 @@ import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.data.utils.explainableErrorOrNull
 import com.iyehuda.feelslike.databinding.FragmentLoginBinding
-import com.iyehuda.feelslike.ui.ViewModelFactory
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class LoginFragment : Fragment() {
-    private val viewModel: LoginViewModel by viewModels { ViewModelFactory() }
+    private val viewModel: LoginViewModel by viewModels()
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 

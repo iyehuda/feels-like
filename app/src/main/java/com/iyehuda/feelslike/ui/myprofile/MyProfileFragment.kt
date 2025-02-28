@@ -11,10 +11,11 @@ import com.bumptech.glide.Glide
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.databinding.FragmentMyProfileBinding
-import com.iyehuda.feelslike.ui.ViewModelFactory
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MyProfileFragment : Fragment() {
-    private val myProfileViewModel: MyProfileViewModel by viewModels { ViewModelFactory() }
+    private val viewModel: MyProfileViewModel by viewModels()
     private var _binding: FragmentMyProfileBinding? = null
     private val binding get() = _binding!!
 
@@ -26,7 +27,7 @@ class MyProfileFragment : Fragment() {
         _binding = FragmentMyProfileBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        myProfileViewModel.userDetails.observe(viewLifecycleOwner) { user ->
+        viewModel.userDetails.observe(viewLifecycleOwner) { user ->
             user?.let {
                 updateUserView(it)
             }
@@ -52,7 +53,7 @@ class MyProfileFragment : Fragment() {
     }
 
     private fun logout() {
-        myProfileViewModel.logout()
+        viewModel.logout()
         findNavController().navigate(R.id.action_logout)
     }
 }

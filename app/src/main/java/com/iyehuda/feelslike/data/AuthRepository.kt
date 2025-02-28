@@ -4,20 +4,23 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.iyehuda.feelslike.data.model.UserDetails
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class AuthRepository(val dataSource: AuthDataSource) {
+@Singleton
+class AuthRepository @Inject constructor(private val auth: AuthDataSource) {
     private val _userDetails = MutableLiveData<UserDetails?>().apply {
-        value = dataSource.getUser()?.let { UserDetails.fromUser(it) }
+        value = auth.getUser()?.let { UserDetails.fromUser(it) }
     }
     val userDetails: LiveData<UserDetails?> = _userDetails
 
     fun logout() {
-        dataSource.logout()
+        auth.logout()
         _userDetails.value = null
     }
 
     suspend fun login(email: String, password: String): Result<UserDetails> {
-        return dataSource.login(email, password).also(::onAuth)
+        return auth.login(email, password).also(::onAuth)
     }
 
     suspend fun signup(
@@ -26,7 +29,7 @@ class AuthRepository(val dataSource: AuthDataSource) {
         password: String,
         avatar: Uri,
     ): Result<UserDetails> {
-        return dataSource.signup(name, email, password, avatar).also(::onAuth)
+        return auth.signup(name, email, password, avatar).also(::onAuth)
     }
 
     private fun onAuth(authResult: Result<UserDetails>) {

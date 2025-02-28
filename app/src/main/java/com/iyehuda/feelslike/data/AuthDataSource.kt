@@ -11,8 +11,11 @@ import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.data.utils.ExplainableException
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class AuthDataSource {
+@Singleton
+class AuthDataSource @Inject constructor() {
     fun getUser() = Firebase.auth.currentUser
 
     suspend fun login(email: String, password: String): Result<UserDetails> {

@@ -8,8 +8,12 @@ import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.AuthRepository
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.ui.base.BaseViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class SignupViewModel(private val authRepository: AuthRepository) : BaseViewModel() {
+@HiltViewModel
+class SignupViewModel @Inject constructor(private val authRepository: AuthRepository) :
+    BaseViewModel() {
     private val _signupForm = MutableLiveData<SignupFormState>()
     val signupFormState: LiveData<SignupFormState> = _signupForm
     private val _selectedImageUri = MutableLiveData(Uri.EMPTY)
