@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.data.utils.explainableErrorOrNull
@@ -47,7 +48,7 @@ class SignupFragment : Fragment() {
 
         viewModel.selectedImageUri.observe(viewLifecycleOwner) {
             if (it != Uri.EMPTY) {
-                binding.avatarImageButton.setImageURI(it)
+                Glide.with(this).load(it).circleCrop().into(binding.avatarImageButton)
             }
         }
 
