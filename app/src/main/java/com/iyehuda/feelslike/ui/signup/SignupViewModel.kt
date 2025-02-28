@@ -51,12 +51,13 @@ class SignupViewModel(private val authRepository: AuthRepository) : BaseViewMode
         val emailError = validateEmail(email)
         val passwordError = validatePassword(password)
         val empty = setOf(
-            displayName, email, password
-        ).all { it.isEmpty() } || _selectedImageUri.value == Uri.EMPTY
-        val error = setOf(displayNameError, emailError, passwordError).any { it != null }
+            displayName, email, password, _selectedImageUri.value.toString()
+        ).any { it.isEmpty() }
+        val error = setOf(
+            displayNameError, emailError, passwordError
+        ).any { it != null } || empty
 
         _signupForm.value = when {
-            empty -> SignupFormState(isDataValid = false)
             error -> SignupFormState(
                 isDataValid = false,
                 displayNameError = displayNameError,
@@ -68,12 +69,14 @@ class SignupViewModel(private val authRepository: AuthRepository) : BaseViewMode
         }
     }
 
-    private fun validateDisplayName(password: String): Int? =
-        if (password.length >= 2) null else R.string.invalid_display_name
+    private fun validateDisplayName(name: String): Int? =
+        if (name.isEmpty() || name.length >= 2) null else R.string.invalid_display_name
 
     private fun validateEmail(email: String): Int? =
-        if (Patterns.EMAIL_ADDRESS.matcher(email).matches()) null else R.string.invalid_email
+        if (email.isEmpty() || Patterns.EMAIL_ADDRESS.matcher(email)
+                .matches()
+        ) null else R.string.invalid_email
 
     private fun validatePassword(password: String): Int? =
-        if (password.length >= 6) null else R.string.invalid_password
+        if (password.isEmpty() || password.length >= 6) null else R.string.invalid_password
 }

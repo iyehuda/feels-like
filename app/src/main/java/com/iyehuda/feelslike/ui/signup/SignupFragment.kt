@@ -95,12 +95,14 @@ class SignupFragment : Fragment() {
     private fun onSignupFormUpdated(signupFormState: SignupFormState) {
         binding.signupButton.isEnabled = signupFormState.isDataValid
 
-        if (signupFormState.emailError != null) {
-            binding.emailEditText.error = getString(signupFormState.emailError)
-        } else {
-            signupFormState.passwordError?.let {
-                binding.passwordEditText.error = getString(it)
-            }
+        signupFormState.displayNameError?.let {
+            binding.displayNameEditText.error = getString(it)
+        }
+        signupFormState.emailError?.let {
+            binding.emailEditText.error = getString(it)
+        }
+        signupFormState.passwordError?.let {
+            binding.passwordEditText.error = getString(it)
         }
     }
 

@@ -39,11 +39,10 @@ class LoginViewModel(private val authRepository: AuthRepository) : BaseViewModel
     fun loginDataChanged(email: String, password: String) {
         val emailError = validateEmail(email)
         val passwordError = validatePassword(password)
-        val empty = email.isEmpty() && password.isEmpty()
-        val error = emailError != null || passwordError != null
+        val empty = setOf(email, password).any { it.isEmpty() }
+        val error = setOf(emailError, passwordError).any { it != null } || empty
 
         _loginForm.value = when {
-            empty -> LoginFormState(isDataValid = false)
             error -> LoginFormState(
                 isDataValid = false, emailError = emailError, passwordError = passwordError
             )
@@ -53,8 +52,10 @@ class LoginViewModel(private val authRepository: AuthRepository) : BaseViewModel
     }
 
     private fun validateEmail(email: String): Int? =
-        if (Patterns.EMAIL_ADDRESS.matcher(email).matches()) null else R.string.invalid_email
+        if (email.isEmpty() || Patterns.EMAIL_ADDRESS.matcher(email)
+                .matches()
+        ) null else R.string.invalid_email
 
     private fun validatePassword(password: String): Int? =
-        if (password.length > 5) null else R.string.invalid_password
+        if (password.isEmpty() || password.length >= 6) null else R.string.invalid_password
 }
