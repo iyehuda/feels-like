@@ -61,12 +61,7 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/display_name_input"
-        style="?attr/textInputOutlinedStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="24dp"
+        style="@style/FeelsLike.TextInputLayout"
         android:hint="@string/prompt_display_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -81,12 +76,7 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/email_input"
-        style="?attr/textInputOutlinedStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="24dp"
+        style="@style/FeelsLike.TextInputLayout"
         android:hint="@string/prompt_email"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -101,12 +91,7 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/password_input"
-        style="?attr/textInputOutlinedStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="24dp"
+        style="@style/FeelsLike.TextInputLayout"
         android:hint="@string/prompt_password"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -122,19 +107,9 @@
 
     <Button
         android:id="@+id/signup_button"
-        android:layout_width="331dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="24dp"
-        android:background="@color/button_background"
+        style="@style/FeelsLike.MainButton"
         android:enabled="false"
-        android:paddingVertical="12dp"
         android:text="@string/action_sign_up"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:textColor="@color/button_text"
-        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/password_input"
