@@ -42,9 +42,8 @@ class MyProfileFragment : Fragment() {
 
     private fun updateUserView(user: UserDetails) {
         Glide.with(this).load(user.photoUrl).circleCrop().into(binding.avatarImageView)
-        binding.emailTextView.text = getString(R.string.profile_email_text, user.email)
-        binding.displayNameTextView.text =
-            getString(R.string.profile_display_name_text, user.displayName)
+        binding.emailTextView.text = user.email
+        binding.displayNameTextView.text = user.displayName
     }
 
     override fun onDestroyView() {

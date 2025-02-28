@@ -28,8 +28,6 @@
     <string name="avatar_input">Choose your avatar</string>
 
     <!-- Strings related to profile -->
-    <string name="profile_email_text">"Email: %1$s"</string>
-    <string name="profile_display_name_text">"Display Name: %1$s"</string>
     <string name="logout_button_text">Logout</string>
     <string name="avatar_image">User avatar</string>
 </resources>
