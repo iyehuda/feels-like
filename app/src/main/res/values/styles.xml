@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Button style with all required attributes -->
+    <style name="FeelsLike.MainButton" parent="Widget.Material3.Button">
+        <!-- Shape -->
+        <item name="cornerRadius">8dp</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.Medium</item>
+
+        <!-- Colors -->
+        <item name="backgroundTint">@color/button_background</item>
+        <item name="android:textColor">@color/button_text_color</item>
+
+        <!-- Typography -->
+        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+        <item name="android:textSize">18sp</item>
+        <item name="fontFamily">sans-serif</item>
+
+        <!-- Dimensions -->
+        <item name="android:paddingVertical">12dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+
+        <!-- Positioning -->
+        <item name="android:layout_marginHorizontal">24dp</item>
+        <item name="android:layout_marginTop">32dp</item>
+    </style>
+
+    <style name="FeelsLike.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <!-- Shape -->
+        <item name="boxCornerRadiusBottomEnd">8dp</item>
+        <item name="boxCornerRadiusBottomStart">8dp</item>
+        <item name="boxCornerRadiusTopEnd">8dp</item>
+        <item name="boxCornerRadiusTopStart">8dp</item>
+
+        <!-- Dimensions -->
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+
+        <!-- Positioning -->
+        <item name="android:layout_marginHorizontal">24dp</item>
+        <item name="android:layout_marginTop">16dp</item>
+    </style>
+</resources>
