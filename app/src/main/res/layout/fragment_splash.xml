@@ -7,7 +7,6 @@
     tools:context=".ui.splash.SplashFragment">
 
     <ImageView
-        android:id="@+id/splashLogo"
         android:layout_width="wrap_content"
         android:layout_height="120dp"
         android:contentDescription="@string/feels_like_logo"
