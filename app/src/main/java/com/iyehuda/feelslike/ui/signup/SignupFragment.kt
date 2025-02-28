@@ -13,6 +13,7 @@ import androidx.annotation.StringRes
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -22,6 +23,7 @@ import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.databinding.FragmentSignupBinding
 import com.iyehuda.feelslike.ui.ViewModelFactory
+import kotlinx.coroutines.launch
 
 class SignupFragment : Fragment() {
     private val viewModel: SignupViewModel by viewModels { ViewModelFactory() }
@@ -56,12 +58,6 @@ class SignupFragment : Fragment() {
             onSignupFormUpdated(it)
         }
 
-        viewModel.signupResult.observe(viewLifecycleOwner) {
-            it?.let {
-                onSignupResult(it)
-            }
-        }
-
         binding.avatarImageButton.setOnClickListener {
             imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
@@ -72,7 +68,6 @@ class SignupFragment : Fragment() {
         binding.displayNameEditText.doAfterTextChanged(afterTextChangedListener)
         binding.emailEditText.doAfterTextChanged(afterTextChangedListener)
         binding.passwordEditText.doAfterTextChanged(afterTextChangedListener)
-
 
         binding.signupButton.setOnClickListener {
             Firebase.analytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT) {
@@ -113,7 +108,11 @@ class SignupFragment : Fragment() {
             binding.emailEditText.text.toString(),
             binding.passwordEditText.text.toString(),
             viewModel.selectedImageUri.value!!,
-        )
+        ) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                onSignupResult(it)
+            }
+        }
     }
 
     private fun onSignupResult(signupResult: SignupResult) {

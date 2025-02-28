@@ -3,7 +3,6 @@ package com.iyehuda.feelslike.ui.login
 import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.AuthRepository
 import com.iyehuda.feelslike.data.utils.Result
@@ -13,8 +12,12 @@ class LoginViewModel(private val authRepository: AuthRepository) : BaseViewModel
     private val _loginForm = MutableLiveData<LoginFormState>()
     val loginFormState: LiveData<LoginFormState> = _loginForm
 
-    val loginResult: LiveData<LoginResult> = authRepository.userLogin.map { result ->
-        when (result) {
+    fun login(
+        email: String,
+        password: String,
+        callback: (LoginResult) -> Unit,
+    ) = safeLaunch {
+        val loginResult = when (val result = authRepository.login(email, password)) {
             is Result.Success -> {
                 LoginResult(success = result.data)
             }
@@ -23,17 +26,12 @@ class LoginViewModel(private val authRepository: AuthRepository) : BaseViewModel
                 LoginResult(error = result.exception.errorStringRes)
             }
 
-            null -> {
+            else -> {
                 LoginResult()
             }
         }
-    }
 
-    fun login(
-        email: String,
-        password: String,
-    ) = safeLaunch {
-        authRepository.login(email, password)
+        callback(loginResult)
     }
 
     fun loginDataChanged(email: String, password: String) {
