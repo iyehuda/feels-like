@@ -14,6 +14,8 @@ import com.iyehuda.feelslike.data.utils.Result
 import kotlinx.coroutines.tasks.await
 
 class AuthDataSource {
+    fun getUser() = Firebase.auth.currentUser
+
     // TODO: Use kotlin builtin Result
     suspend fun login(email: String, password: String): Result<UserDetails> {
         try {

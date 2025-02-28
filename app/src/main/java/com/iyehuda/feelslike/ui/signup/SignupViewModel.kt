@@ -4,7 +4,6 @@ import android.net.Uri
 import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.AuthRepository
 import com.iyehuda.feelslike.data.utils.Result
@@ -16,30 +15,29 @@ class SignupViewModel(private val authRepository: AuthRepository) : BaseViewMode
     private val _selectedImageUri = MutableLiveData(Uri.EMPTY)
     val selectedImageUri: LiveData<Uri> = _selectedImageUri
 
-    // TODO: Reuse the SignupResult class from the login package
-    val signupResult: LiveData<SignupResult> = authRepository.userLogin.map { result ->
-        when (result) {
-            is Result.Success -> {
-                SignupResult(success = result.data)
-            }
-
-            is Result.Error -> {
-                SignupResult(error = result.exception.errorStringRes)
-            }
-
-            null -> {
-                SignupResult()
-            }
-        }
-    }
-
     fun signup(
         name: String,
         email: String,
         password: String,
         avatar: Uri,
+        callback: (SignupResult) -> Unit,
     ) = safeLaunch {
-        authRepository.signup(name, email, password, avatar)
+        val signupResult =
+            when (val result = authRepository.signup(name, email, password, avatar)) {
+                is Result.Success -> {
+                    SignupResult(success = result.data)
+                }
+
+                is Result.Error -> {
+                    SignupResult(error = result.exception.errorStringRes)
+                }
+
+                else -> {
+                    SignupResult()
+                }
+            }
+
+        callback(signupResult)
     }
 
     fun onAvatarSelected(uri: Uri?) {

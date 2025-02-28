@@ -5,12 +5,12 @@ import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -20,6 +20,7 @@ import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.databinding.FragmentLoginBinding
 import com.iyehuda.feelslike.ui.ViewModelFactory
+import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment() {
     private val viewModel: LoginViewModel by viewModels { ViewModelFactory() }
@@ -42,12 +43,6 @@ class LoginFragment : Fragment() {
             onLoginFormUpdated(it)
         }
 
-        viewModel.loginResult.observe(viewLifecycleOwner) {
-            it?.let {
-                onLoginResult(it)
-            }
-        }
-
         val afterTextChangedListener = { _: Editable? ->
             viewModel.loginDataChanged(
                 binding.emailEditText.text.toString(), binding.passwordEditText.text.toString()
@@ -55,12 +50,6 @@ class LoginFragment : Fragment() {
         }
         binding.emailEditText.doAfterTextChanged(afterTextChangedListener)
         binding.passwordEditText.doAfterTextChanged(afterTextChangedListener)
-        binding.passwordEditText.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                performLogin()
-            }
-            false
-        }
         binding.loginButton.setOnClickListener {
             Firebase.analytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT) {
                 param(FirebaseAnalytics.Param.ITEM_ID, "login_button")
@@ -90,7 +79,11 @@ class LoginFragment : Fragment() {
         binding.loadingProgressBar.visibility = View.VISIBLE
         viewModel.login(
             binding.emailEditText.text.toString(), binding.passwordEditText.text.toString()
-        )
+        ) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                onLoginResult(it)
+            }
+        }
     }
 
     private fun onLoginResult(loginResult: LoginResult) {
