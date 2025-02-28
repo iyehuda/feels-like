@@ -15,12 +15,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.firebase.Firebase
-import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.analytics.analytics
-import com.google.firebase.analytics.logEvent
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
+import com.iyehuda.feelslike.data.utils.explainableErrorOrNull
 import com.iyehuda.feelslike.databinding.FragmentSignupBinding
 import com.iyehuda.feelslike.ui.ViewModelFactory
 import kotlinx.coroutines.launch
@@ -70,12 +67,7 @@ class SignupFragment : Fragment() {
         binding.passwordEditText.doAfterTextChanged(afterTextChangedListener)
 
         binding.signupButton.setOnClickListener {
-            Firebase.analytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT) {
-                param(FirebaseAnalytics.Param.ITEM_ID, "signup_button")
-                param(FirebaseAnalytics.Param.CONTENT_TYPE, "button")
-                param(FirebaseAnalytics.Param.SCREEN_NAME, "signup")
-            }
-            performSignup()
+            signup()
         }
     }
 
@@ -101,7 +93,7 @@ class SignupFragment : Fragment() {
         }
     }
 
-    private fun performSignup() {
+    private fun signup() {
         binding.loadingProgressBar.visibility = View.VISIBLE
         viewModel.signup(
             binding.displayNameEditText.text.toString(),
@@ -115,22 +107,12 @@ class SignupFragment : Fragment() {
         }
     }
 
-    private fun onSignupResult(signupResult: SignupResult) {
-        Firebase.analytics.logEvent(FirebaseAnalytics.Event.SIGN_UP) {
-            param(FirebaseAnalytics.Param.METHOD, "email")
-            param(FirebaseAnalytics.Param.SUCCESS, (signupResult.success != null).toString())
-            param(FirebaseAnalytics.Param.SCREEN_NAME, "signup")
-
-            signupResult.error?.let {
-                param("error", getString(it))
-            }
-        }
-
+    private fun onSignupResult(signupResult: Result<UserDetails>) {
         binding.loadingProgressBar.visibility = View.GONE
-        signupResult.error?.let {
+        signupResult.explainableErrorOrNull()?.let {
             onSignupFailed(it)
         }
-        signupResult.success?.let {
+        signupResult.getOrNull()?.let {
             onSignupSucceeded(it)
         }
     }

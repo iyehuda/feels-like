@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.AuthRepository
-import com.iyehuda.feelslike.data.utils.Result
+import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.ui.base.BaseViewModel
 
 class SignupViewModel(private val authRepository: AuthRepository) : BaseViewModel() {
@@ -20,24 +20,10 @@ class SignupViewModel(private val authRepository: AuthRepository) : BaseViewMode
         email: String,
         password: String,
         avatar: Uri,
-        callback: (SignupResult) -> Unit,
+        callback: (Result<UserDetails>) -> Unit,
     ) = safeLaunch {
-        val signupResult =
-            when (val result = authRepository.signup(name, email, password, avatar)) {
-                is Result.Success -> {
-                    SignupResult(success = result.data)
-                }
-
-                is Result.Error -> {
-                    SignupResult(error = result.exception.errorStringRes)
-                }
-
-                else -> {
-                    SignupResult()
-                }
-            }
-
-        callback(signupResult)
+        val result = authRepository.signup(name, email, password, avatar)
+        callback(result)
     }
 
     fun onAvatarSelected(uri: Uri?) {
