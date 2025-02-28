@@ -6,6 +6,8 @@ import com.iyehuda.feelslike.data.AuthDataSource
 import com.iyehuda.feelslike.data.AuthRepository
 import com.iyehuda.feelslike.ui.login.LoginViewModel
 import com.iyehuda.feelslike.ui.myprofile.MyProfileViewModel
+import com.iyehuda.feelslike.ui.signup.SignupViewModel
+import com.iyehuda.feelslike.ui.splash.SplashViewModel
 
 class ViewModelFactory : ViewModelProvider.Factory {
     companion object {
@@ -16,7 +18,15 @@ class ViewModelFactory : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T = when {
+        modelClass.isAssignableFrom(SplashViewModel::class.java) -> SplashViewModel(
+            authRepository = authRepository
+        ) as T
+
         modelClass.isAssignableFrom(LoginViewModel::class.java) -> LoginViewModel(
+            authRepository = authRepository
+        ) as T
+
+        modelClass.isAssignableFrom(SignupViewModel::class.java) -> SignupViewModel(
             authRepository = authRepository
         ) as T
 
