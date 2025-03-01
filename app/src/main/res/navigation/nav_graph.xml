@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/splash_screen"
         android:name="com.iyehuda.feelslike.ui.splash.SplashFragment"
-        android:label="fragment_splash"
+        android:label="Splash"
         tools:layout="@layout/fragment_splash">
 
         <action
@@ -56,19 +56,19 @@
     <fragment
         android:id="@+id/home_screen"
         android:name="com.iyehuda.feelslike.ui.home.HomeFragment"
-        android:label="@string/title_home"
+        android:label="Home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/map_screen"
         android:name="com.iyehuda.feelslike.ui.map.MapFragment"
-        android:label="@string/title_map"
+        android:label="Map"
         tools:layout="@layout/fragment_map" />
 
     <fragment
         android:id="@+id/my_profile_screen"
         android:name="com.iyehuda.feelslike.ui.myprofile.MyProfileFragment"
-        android:label="@string/title_myprofile"
+        android:label="My Profile"
         tools:layout="@layout/fragment_my_profile">
 
         <action
@@ -76,5 +76,13 @@
             app:destination="@id/login_screen"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_edit_profile"
+            app:destination="@id/edit_profile_screen" />
     </fragment>
+    <fragment
+        android:id="@+id/edit_profile_screen"
+        android:name="com.iyehuda.feelslike.ui.editprofile.EditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_edit_profile" />
 </navigation>

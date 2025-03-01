@@ -13,38 +13,30 @@
 
     <ImageView
         android:id="@+id/logo"
-        android:layout_width="wrap_content"
-        android:layout_height="150dp"
-        android:layout_marginTop="32dp"
+        style="@style/FeelsLike.Image.Logo"
         android:contentDescription="@string/feels_like_logo"
-        android:src="@drawable/feels_like_logo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/loginTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:id="@+id/login_title"
+        style="@style/FeelsLike.Text.Headline.Small"
         android:layout_marginTop="32dp"
         android:text="@string/login_title"
-        android:textSize="24sp"
-        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logo" />
 
     <TextView
-        android:id="@+id/loginSubtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
+        android:id="@+id/login_subtitle"
+        style="@style/FeelsLike.Text.Body.Medium"
+        android:layout_marginVertical="8dp"
         android:text="@string/login_subtitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/loginTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/login_title"
+        tools:ignore="TextContrastCheck" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/email_input"
@@ -52,7 +44,7 @@
         android:hint="@string/prompt_email"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/loginSubtitle">
+        app:layout_constraintTop_toBottomOf="@id/login_subtitle">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/email_edit_text"
@@ -79,7 +71,7 @@
 
     <Button
         android:id="@+id/login_button"
-        style="@style/FeelsLike.MainButton"
+        style="@style/FeelsLike.Button.Main"
         android:enabled="false"
         android:text="@string/action_sign_in"
         app:layout_constraintEnd_toEndOf="parent"
@@ -101,12 +93,9 @@
         app:layout_constraintTop_toBottomOf="@+id/login_button"
         tools:ignore="TextContrastCheck,TouchTargetSizeCheck" />
 
-    <ProgressBar
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/loading_progress_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="24dp"
+        style="@style/FeelsLike.ProgressBar.Circular"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

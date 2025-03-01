@@ -1,4 +1,4 @@
-package com.iyehuda.feelslike.ui.signup
+package com.iyehuda.feelslike.ui.editprofile
 
 import android.os.Bundle
 import android.text.Editable
@@ -16,15 +16,15 @@ import com.bumptech.glide.Glide
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.data.utils.explainableErrorOrNull
-import com.iyehuda.feelslike.databinding.FragmentSignupBinding
+import com.iyehuda.feelslike.databinding.FragmentEditProfileBinding
 import com.iyehuda.feelslike.ui.utils.ImagePicker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class SignupFragment : Fragment() {
-    private val viewModel: SignupViewModel by viewModels()
-    private var _binding: FragmentSignupBinding? = null
+class EditProfileFragment : Fragment() {
+    private val viewModel: EditProfileViewModel by viewModels()
+    private var _binding: FragmentEditProfileBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -32,7 +32,7 @@ class SignupFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = FragmentSignupBinding.inflate(inflater, container, false)
+        _binding = FragmentEditProfileBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -44,15 +44,21 @@ class SignupFragment : Fragment() {
             updateFormData()
         }
 
+        viewModel.userDetails.observe(viewLifecycleOwner) { user ->
+            user?.let {
+                updateUserView(it)
+            }
+        }
+
         viewModel.selectedAvatar.observe(viewLifecycleOwner) {
-            Glide.with(this).load(it).circleCrop().into(binding.chooseAvatarImageButton)
+            Glide.with(this).load(it).circleCrop().into(binding.editAvatarImageButton)
         }
 
         viewModel.formState.observe(viewLifecycleOwner) {
             onFormUpdated(it)
         }
 
-        binding.chooseAvatarImageButton.setOnClickListener {
+        binding.editAvatarImageButton.setOnClickListener {
             imagePicker.pickSingleImage()
         }
 
@@ -60,33 +66,32 @@ class SignupFragment : Fragment() {
             updateFormData()
         }
         binding.displayNameEditText.doAfterTextChanged(afterTextChangedListener)
-        binding.emailEditText.doAfterTextChanged(afterTextChangedListener)
-        binding.passwordEditText.doAfterTextChanged(afterTextChangedListener)
 
-        binding.signupButton.setOnClickListener {
+        binding.saveButton.setOnClickListener {
             submitForm()
         }
+
+        binding.cancelButton.setOnClickListener {
+            goBack()
+        }
+    }
+
+    private fun updateUserView(user: UserDetails) {
+        viewModel.updateAvatar(user.photoUrl)
+        binding.emailTextView.text = user.email
+        binding.displayNameTextView.text = user.displayName
+        binding.displayNameEditText.setText(user.displayName)
     }
 
     private fun updateFormData() {
-        viewModel.updateFormData(
-            binding.displayNameEditText.text.toString(),
-            binding.emailEditText.text.toString(),
-            binding.passwordEditText.text.toString(),
-        )
+        viewModel.updateFormData(binding.displayNameEditText.text.toString())
     }
 
-    private fun onFormUpdated(signupFormState: SignupFormState) {
-        binding.signupButton.isEnabled = signupFormState.isDataValid
+    private fun onFormUpdated(signupFormState: EditProfileFormState) {
+        binding.saveButton.isEnabled = signupFormState.isDataValid
 
         signupFormState.displayNameError?.let {
             binding.displayNameEditText.error = getString(it)
-        }
-        signupFormState.emailError?.let {
-            binding.emailEditText.error = getString(it)
-        }
-        signupFormState.passwordError?.let {
-            binding.passwordEditText.error = getString(it)
         }
     }
 
@@ -94,10 +99,8 @@ class SignupFragment : Fragment() {
         binding.loadingProgressBar.visibility = View.VISIBLE
 
         // TODO: Use uiState
-        viewModel.signup(
+        viewModel.updateProfile(
             binding.displayNameEditText.text.toString(),
-            binding.emailEditText.text.toString(),
-            binding.passwordEditText.text.toString(),
             viewModel.selectedAvatar.value!!,
         ) {
             viewLifecycleOwner.lifecycleScope.launch {
@@ -114,18 +117,22 @@ class SignupFragment : Fragment() {
         }
 
         signupResult.getOrNull()?.let {
-            onSubmitSuccess(it)
+            onSubmitSuccess()
         }
     }
 
-    private fun onSubmitSuccess(model: UserDetails) {
-        displayToast(getString(R.string.signup_greeting, model.displayName))
-        findNavController().navigate(R.id.action_sign_up)
+    private fun onSubmitSuccess() {
+        displayToast(getString(R.string.profile_edit_succeeded))
+        goBack()
     }
 
     private fun onSubmitFailure(@StringRes errorString: Int) = displayToast(getString(errorString))
 
     // TODO: Move to FeelsLikeBaseFragment
+    private fun goBack() {
+        findNavController().popBackStack()
+    }
+
     private fun displayToast(message: String) {
         context?.applicationContext?.let { appContext ->
             Toast.makeText(appContext, message, Toast.LENGTH_SHORT).show()

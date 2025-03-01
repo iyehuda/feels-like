@@ -1,17 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Button style with all required attributes -->
-    <style name="FeelsLike.MainButton" parent="Widget.Material3.Button">
+
+    <style name="FeelsLike.Button" parent="Widget.Material3.Button">
         <!-- Shape -->
         <item name="cornerRadius">8dp</item>
         <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.Medium</item>
 
-        <!-- Colors -->
-        <item name="backgroundTint">@color/button_background</item>
-        <item name="android:textColor">@color/button_text_color</item>
-
         <!-- Typography -->
-        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
         <item name="android:textSize">18sp</item>
         <item name="fontFamily">sans-serif</item>
 
@@ -23,6 +18,37 @@
 
         <!-- Positioning -->
         <item name="android:layout_marginHorizontal">24dp</item>
+    </style>
+
+    <style name="FeelsLike.Button.Main">
+        <!-- Colors -->
+        <item name="backgroundTint">@color/button_background</item>
+        <item name="android:textColor">@color/button_text_color</item>
+
+        <!-- Positioning -->
+        <item name="android:layout_marginTop">32dp</item>
+    </style>
+
+    <style name="FeelsLike.Button.Cancel">
+        <!-- Colors -->
+        <item name="backgroundTint">@color/material_dynamic_neutral30</item>
+        <item name="android:textColor">@color/design_default_color_on_primary</item>
+
+        <!-- Positioning -->
+        <item name="android:layout_marginTop">16dp</item>
+    </style>
+
+    <style name="FeelsLike.Button.TextIcon" parent="Widget.Material3.Button.TextButton.Icon">
+        <!-- Typography -->
+        <item name="android:textAppearance">?attr/textAppearanceLabelSmall</item>
+        <item name="android:textSize">16sp</item>
+        <item name="fontFamily">sans-serif</item>
+
+        <!-- Dimensions -->
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+
+        <!-- Positioning -->
         <item name="android:layout_marginTop">32dp</item>
     </style>
 
@@ -40,5 +66,66 @@
         <!-- Positioning -->
         <item name="android:layout_marginHorizontal">24dp</item>
         <item name="android:layout_marginTop">16dp</item>
+    </style>
+
+    <style name="FeelsLike.Text.Headline.Small" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAlignment">center</item>
+
+        <!-- Dimensions -->
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+
+        <!-- Positioning -->
+        <item name="android:layout_marginTop">8dp</item>
+    </style>
+
+    <style name="FeelsLike.Text.Body.Medium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textAlignment">center</item>
+        <item name="android:textColor">@color/material_dynamic_secondary50</item>
+
+        <!-- Dimensions -->
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+    </style>
+
+    <style name="FeelsLike.Image.Avatar" parent="Widget.AppCompat.ImageButton">
+        <item name="android:background" />
+
+        <!-- Dimensions -->
+        <item name="android:layout_height">@dimen/avatar_image_height</item>
+        <item name="android:layout_width">@dimen/avatar_image_width</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:scaleType">centerCrop</item>
+
+        <!-- Positioning -->
+        <item name="android:layout_marginTop">32dp</item>
+    </style>
+
+    <style name="FeelsLike.Image.Logo" parent="android:Widget">
+        <item name="android:src">@drawable/feels_like_logo</item>
+
+        <!-- Dimensions -->
+        <item name="android:layout_height">150dp</item>
+        <item name="android:layout_width">wrap_content</item>
+
+        <!-- Positioning -->
+        <item name="android:layout_marginTop">32dp</item>
+    </style>
+
+    <style name="FeelsLike.Image.Logo.Small">
+        <item name="android:layout_height">70dp</item>
+    </style>
+
+    <style name="FeelsLike.ProgressBar.Circular" parent="Widget.MaterialComponents.CircularProgressIndicator">
+        <item name="android:indeterminate">true</item>
+
+        <!-- Dimensions -->
+        <item name="android:layout_height">32dp</item>
+        <item name="android:layout_width">32dp</item>
+
+        <!-- Positioning -->
+        <item name="android:layout_gravity">center</item>
+        <item name="android:layout_marginTop">24dp</item>
     </style>
 </resources>

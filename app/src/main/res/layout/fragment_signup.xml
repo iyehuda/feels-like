@@ -13,32 +13,24 @@
 
     <ImageView
         android:id="@+id/logo"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:layout_marginTop="32dp"
+        style="@style/FeelsLike.Image.Logo.Small"
         android:contentDescription="@string/feels_like_logo"
-        android:src="@drawable/feels_like_logo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/signup_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        style="@style/FeelsLike.Text.Headline.Small"
         android:layout_marginTop="24dp"
         android:text="@string/signup_title"
-        android:textSize="24sp"
-        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logo" />
 
     <TextView
         android:id="@+id/signup_subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        style="@style/FeelsLike.Text.Body.Medium"
         android:layout_marginTop="8dp"
         android:text="@string/signup_subtitle"
         app:layout_constraintEnd_toEndOf="parent"
@@ -46,14 +38,10 @@
         app:layout_constraintTop_toBottomOf="@+id/signup_title" />
 
     <ImageButton
-        android:id="@+id/avatar_image_button"
-        android:layout_width="@dimen/avatar_image_height"
-        android:layout_height="@dimen/avatar_image_height"
+        android:id="@+id/choose_avatar_image_button"
+        style="@style/FeelsLike.Image.Avatar"
         android:layout_marginTop="24dp"
-        android:background="#00FFFFFF"
         android:contentDescription="@string/avatar_input"
-        android:cropToPadding="true"
-        android:scaleType="centerCrop"
         android:src="@drawable/icon_add_photo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -65,7 +53,7 @@
         android:hint="@string/prompt_display_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/avatar_image_button">
+        app:layout_constraintTop_toBottomOf="@+id/choose_avatar_image_button">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/display_name_edit_text"
@@ -107,7 +95,7 @@
 
     <Button
         android:id="@+id/signup_button"
-        style="@style/FeelsLike.MainButton"
+        style="@style/FeelsLike.Button.Main"
         android:enabled="false"
         android:text="@string/action_sign_up"
         app:layout_constraintEnd_toEndOf="parent"
@@ -115,12 +103,9 @@
         app:layout_constraintTop_toBottomOf="@+id/password_input"
         tools:ignore="VisualLintButtonSize" />
 
-    <ProgressBar
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/loading_progress_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="24dp"
+        style="@style/FeelsLike.ProgressBar.Circular"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
