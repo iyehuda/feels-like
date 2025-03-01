@@ -17,7 +17,7 @@ class SignupViewModel @Inject constructor(private val authRepository: AuthReposi
     BaseViewModel() {
     private val _formState = MutableLiveData<SignupFormState>()
     val formState: LiveData<SignupFormState> = _formState
-    private val _selectedAvatar = MutableLiveData<Uri>()
+    private val _selectedAvatar = MutableLiveData(Uri.EMPTY)
     val selectedAvatar: LiveData<Uri> = _selectedAvatar
 
     fun signup(
