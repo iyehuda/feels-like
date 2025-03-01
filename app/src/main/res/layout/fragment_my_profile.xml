@@ -13,7 +13,7 @@
         android:layout_marginTop="80dp"
         android:contentDescription="@string/avatar_image"
         android:scaleType="centerCrop"
-        android:src="@drawable/ic_account_black_24dp"
+        android:src="@drawable/icon_account"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -45,17 +45,33 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/display_name_text_view"
+        tools:ignore="TextContrastCheck"
         tools:text="jane@example.com" />
 
     <Button
-        android:id="@+id/logoutButton"
+        android:id="@+id/logout_button"
+        style="@style/Widget.Material3.Button.TextButton.Icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="32dp"
         android:text="@string/logout_button_text"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textSize="16sp"
+        app:icon="@drawable/icon_logout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/display_name_text_view"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="TextContrastCheck" />
+
+    <Button
+        android:id="@+id/edit_button"
+        style="@style/Widget.Material3.Button.TextButton.Icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="@string/edit_button_text"
+        android:textSize="16sp"
+        app:icon="@drawable/icon_edit"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:ignore="TextContrastCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
