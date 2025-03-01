@@ -1,4 +1,4 @@
-package com.iyehuda.feelslike.data
+package com.iyehuda.feelslike.data.auth
 
 import android.net.Uri
 import androidx.lifecycle.LiveData
@@ -30,6 +30,10 @@ class AuthRepository @Inject constructor(private val auth: AuthDataSource) {
         avatar: Uri,
     ): Result<UserDetails> {
         return auth.signup(name, email, password, avatar).also(::onAuth)
+    }
+
+    suspend fun updateProfile(name: String, avatar: Uri): Result<UserDetails> {
+        return auth.updateProfile(name, avatar).also(::onAuth)
     }
 
     private fun onAuth(authResult: Result<UserDetails>) {

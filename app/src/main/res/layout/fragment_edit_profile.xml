@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.editprofile.EditProfileFragment">
+
+    <ImageButton
+        android:id="@+id/edit_avatar_image_button"
+        style="@style/FeelsLike.Image.Avatar"
+        android:layout_marginTop="80dp"
+        android:contentDescription="@string/edit_avatar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/icon_account" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/edit_icon"
+        android:src="@drawable/icon_edit"
+        app:layout_constraintBottom_toBottomOf="@+id/edit_avatar_image_button"
+        app:layout_constraintEnd_toEndOf="@+id/edit_avatar_image_button" />
+
+    <TextView
+        android:id="@+id/display_name_text_view"
+        style="@style/FeelsLike.Text.Headline.Small"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/edit_avatar_image_button"
+        tools:text="Jane Doe" />
+
+    <TextView
+        android:id="@+id/email_text_view"
+        style="@style/FeelsLike.Text.Body.Medium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/display_name_text_view"
+        tools:ignore="TextContrastCheck"
+        tools:text="jane@example.com" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/display_name_input"
+        style="@style/FeelsLike.TextInputLayout"
+        android:hint="@string/prompt_edit_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/email_text_view">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/display_name_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:ignore="VisualLintTextFieldSize,TextContrastCheck"
+            tools:text="Jane Doe" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/save_button"
+        style="@style/FeelsLike.Button.Main"
+        android:text="@string/action_save"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/display_name_input"
+        tools:ignore="VisualLintButtonSize,TextContrastCheck" />
+
+    <Button
+        android:id="@+id/cancel_button"
+        style="@style/FeelsLike.Button.Cancel"
+        android:text="@string/action_cancel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/save_button"
+        tools:ignore="VisualLintButtonSize" />
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/loading_progress_bar"
+        style="@style/FeelsLike.ProgressBar.Circular"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cancel_button" />
+</androidx.constraintlayout.widget.ConstraintLayout>

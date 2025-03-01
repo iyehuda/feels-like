@@ -4,7 +4,7 @@ import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.iyehuda.feelslike.R
-import com.iyehuda.feelslike.data.AuthRepository
+import com.iyehuda.feelslike.data.auth.AuthRepository
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.ui.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel

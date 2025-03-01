@@ -1,9 +1,10 @@
-package com.iyehuda.feelslike.data
+package com.iyehuda.feelslike.data.auth
 
 import android.net.Uri
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.storage.storage
@@ -38,6 +39,28 @@ class AuthDataSource @Inject constructor() {
         Firebase.auth.signOut()
     }
 
+    private suspend fun updateUserProfile(
+        user: FirebaseUser,
+        name: String,
+        avatar: Uri,
+    ) {
+        val downloadUrl = if (user.photoUrl == avatar) {
+            avatar
+        } else {
+            val storageRef = Firebase.storage.reference
+            val avatarRef = storageRef.child("avatars/${user.uid}")
+
+            avatarRef.putFile(avatar).await()
+
+            avatarRef.downloadUrl.await()
+        }
+
+        user.updateProfile(userProfileChangeRequest {
+            displayName = name
+            photoUri = downloadUrl
+        }).await()
+    }
+
     suspend fun signup(
         name: String,
         email: String,
@@ -48,22 +71,25 @@ class AuthDataSource @Inject constructor() {
             val authResult = Firebase.auth.createUserWithEmailAndPassword(email, password).await()
             val user = authResult.user!!
 
-            val storageRef = Firebase.storage.reference
-            val avatarRef = storageRef.child("avatars/${user.uid}")
-
-            avatarRef.putFile(avatar).await()
-            val downloadUrl = avatarRef.downloadUrl.await()
-
-            user.updateProfile(userProfileChangeRequest {
-                displayName = name
-                photoUri = downloadUrl
-            }).await()
+            updateUserProfile(user, name, avatar)
 
             return Result.success(UserDetails.fromUser(user))
         } catch (e: FirebaseAuthUserCollisionException) {
             return Result.failure(ExplainableException(R.string.signup_email_taken, cause = e))
         } catch (e: Throwable) {
             return Result.failure(ExplainableException(R.string.signup_failed, cause = e))
+        }
+    }
+
+    suspend fun updateProfile(name: String, avatar: Uri): Result<UserDetails> {
+        try {
+            val user = getUser()!!
+
+            updateUserProfile(user, name, avatar)
+
+            return Result.success(UserDetails.fromUser(user))
+        } catch (e: Throwable) {
+            return Result.failure(ExplainableException(R.string.update_profile_failed, cause = e))
         }
     }
 }

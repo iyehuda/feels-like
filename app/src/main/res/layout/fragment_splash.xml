@@ -7,10 +7,9 @@
     tools:context=".ui.splash.SplashFragment">
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="120dp"
+        style="@style/FeelsLike.Image.Logo"
+        android:layout_margin="0dp"
         android:contentDescription="@string/feels_like_logo"
-        android:src="@drawable/feels_like_logo"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

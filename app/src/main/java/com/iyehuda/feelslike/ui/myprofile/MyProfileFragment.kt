@@ -25,7 +25,6 @@ class MyProfileFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = FragmentMyProfileBinding.inflate(inflater, container, false)
-        val root: View = binding.root
 
         viewModel.userDetails.observe(viewLifecycleOwner) { user ->
             user?.let {
@@ -33,11 +32,16 @@ class MyProfileFragment : Fragment() {
             }
         }
 
-        binding.logoutButton.setOnClickListener {
-            logout()
+        binding.editButton.setOnClickListener {
+            findNavController().navigate(R.id.action_edit_profile)
         }
 
-        return root
+        binding.logoutButton.setOnClickListener {
+            viewModel.logout()
+            findNavController().navigate(R.id.action_logout)
+        }
+
+        return binding.root
     }
 
     private fun updateUserView(user: UserDetails) {
@@ -49,10 +53,5 @@ class MyProfileFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    private fun logout() {
-        viewModel.logout()
-        findNavController().navigate(R.id.action_logout)
     }
 }

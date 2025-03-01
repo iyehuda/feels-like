@@ -1,12 +1,13 @@
 package com.iyehuda.feelslike.ui.signup
 
 import android.net.Uri
-import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.iyehuda.feelslike.R
-import com.iyehuda.feelslike.data.AuthRepository
+import com.iyehuda.feelslike.data.auth.AuthRepository
 import com.iyehuda.feelslike.data.model.UserDetails
+import com.iyehuda.feelslike.data.utils.FormValidator.Companion.validateDisplayName
+import com.iyehuda.feelslike.data.utils.FormValidator.Companion.validateEmail
+import com.iyehuda.feelslike.data.utils.FormValidator.Companion.validatePassword
 import com.iyehuda.feelslike.ui.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -14,10 +15,10 @@ import javax.inject.Inject
 @HiltViewModel
 class SignupViewModel @Inject constructor(private val authRepository: AuthRepository) :
     BaseViewModel() {
-    private val _signupForm = MutableLiveData<SignupFormState>()
-    val signupFormState: LiveData<SignupFormState> = _signupForm
-    private val _selectedImageUri = MutableLiveData(Uri.EMPTY)
-    val selectedImageUri: LiveData<Uri> = _selectedImageUri
+    private val _formState = MutableLiveData<SignupFormState>()
+    val formState: LiveData<SignupFormState> = _formState
+    private val _selectedAvatar = MutableLiveData<Uri>()
+    val selectedAvatar: LiveData<Uri> = _selectedAvatar
 
     fun signup(
         name: String,
@@ -30,22 +31,22 @@ class SignupViewModel @Inject constructor(private val authRepository: AuthReposi
         callback(result)
     }
 
-    fun onAvatarSelected(uri: Uri?) {
-        _selectedImageUri.value = uri ?: Uri.EMPTY
+    fun updateAvatar(uri: Uri?) {
+        _selectedAvatar.value = uri ?: Uri.EMPTY
     }
 
-    fun signupDataChanged(displayName: String, email: String, password: String) {
+    fun updateFormData(displayName: String, email: String, password: String) {
         val displayNameError = validateDisplayName(displayName)
         val emailError = validateEmail(email)
         val passwordError = validatePassword(password)
         val empty = setOf(
-            displayName, email, password, _selectedImageUri.value.toString()
+            displayName, email, password, _selectedAvatar.value.toString()
         ).any { it.isEmpty() }
         val error = setOf(
             displayNameError, emailError, passwordError
         ).any { it != null } || empty
 
-        _signupForm.value = when {
+        _formState.value = when {
             error -> SignupFormState(
                 isDataValid = false,
                 displayNameError = displayNameError,
@@ -56,15 +57,4 @@ class SignupViewModel @Inject constructor(private val authRepository: AuthReposi
             else -> SignupFormState(isDataValid = true)
         }
     }
-
-    private fun validateDisplayName(name: String): Int? =
-        if (name.isEmpty() || name.length >= 2) null else R.string.invalid_display_name
-
-    private fun validateEmail(email: String): Int? =
-        if (email.isEmpty() || Patterns.EMAIL_ADDRESS.matcher(email)
-                .matches()
-        ) null else R.string.invalid_email
-
-    private fun validatePassword(password: String): Int? =
-        if (password.isEmpty() || password.length >= 6) null else R.string.invalid_password
 }

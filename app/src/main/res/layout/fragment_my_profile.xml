@@ -8,11 +8,9 @@
 
     <ImageView
         android:id="@+id/avatar_image_view"
-        android:layout_width="@dimen/avatar_image_width"
-        android:layout_height="@dimen/avatar_image_height"
+        style="@style/FeelsLike.Image.Avatar"
         android:layout_marginTop="80dp"
         android:contentDescription="@string/avatar_image"
-        android:scaleType="centerCrop"
         android:src="@drawable/icon_account"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,14 +18,7 @@
 
     <TextView
         android:id="@+id/display_name_text_view"
-        style="@style/TextAppearance.Material3.HeadlineSmall"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
-        android:textStyle="bold"
+        style="@style/FeelsLike.Text.Headline.Small"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/avatar_image_view"
@@ -35,13 +26,7 @@
 
     <TextView
         android:id="@+id/email_text_view"
-        style="@style/TextAppearance.Material3.BodyMedium"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
-        android:textColor="@color/material_dynamic_secondary50"
+        style="@style/FeelsLike.Text.Body.Medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/display_name_text_view"
@@ -50,12 +35,8 @@
 
     <Button
         android:id="@+id/logout_button"
-        style="@style/Widget.Material3.Button.TextButton.Icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        style="@style/FeelsLike.Button.TextIcon"
         android:text="@string/logout_button_text"
-        android:textSize="16sp"
         app:icon="@drawable/icon_logout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -63,12 +44,8 @@
 
     <Button
         android:id="@+id/edit_button"
-        style="@style/Widget.Material3.Button.TextButton.Icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        style="@style/FeelsLike.Button.TextIcon"
         android:text="@string/edit_button_text"
-        android:textSize="16sp"
         app:icon="@drawable/icon_edit"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
