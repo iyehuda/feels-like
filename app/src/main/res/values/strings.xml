@@ -30,4 +30,5 @@
     <!-- Strings related to profile -->
     <string name="logout_button_text">Logout</string>
     <string name="avatar_image">User avatar</string>
+    <string name="edit_button_text">Edit</string>
 </resources>
