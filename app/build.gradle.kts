@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.firebase.storage.ktx)
     implementation(libs.glide)
     implementation(libs.hilt.android)
+    implementation(libs.shimmer)
     kapt(libs.hilt.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

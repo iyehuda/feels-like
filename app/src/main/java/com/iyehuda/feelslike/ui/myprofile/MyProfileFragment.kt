@@ -6,11 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.databinding.FragmentMyProfileBinding
 import com.iyehuda.feelslike.ui.base.BaseFragment
+import com.iyehuda.feelslike.ui.utils.ImageUtil
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -42,7 +42,7 @@ class MyProfileFragment : BaseFragment<FragmentMyProfileBinding>() {
     }
 
     private fun updateUserView(user: UserDetails) {
-        Glide.with(this).load(user.photoUrl).circleCrop().into(binding.avatarImageView)
+        ImageUtil.loadImage(this, binding.avatarImageView, user.photoUrl, true)
         binding.emailTextView.text = user.email
         binding.displayNameTextView.text = user.displayName
     }

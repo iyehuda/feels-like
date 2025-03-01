@@ -10,13 +10,13 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.data.utils.explainableErrorOrNull
 import com.iyehuda.feelslike.databinding.FragmentSignupBinding
 import com.iyehuda.feelslike.ui.base.BaseFragment
 import com.iyehuda.feelslike.ui.utils.ImagePicker
+import com.iyehuda.feelslike.ui.utils.ImageUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -39,7 +39,7 @@ class SignupFragment : BaseFragment<FragmentSignupBinding>() {
 
         viewModel.selectedAvatar.observe(viewLifecycleOwner) {
             if (it != Uri.EMPTY) {
-                Glide.with(this).load(it).circleCrop().into(binding.chooseAvatarImageButton)
+                ImageUtil.loadImage(this, binding.chooseAvatarImageButton, it, true)
             }
         }
 
