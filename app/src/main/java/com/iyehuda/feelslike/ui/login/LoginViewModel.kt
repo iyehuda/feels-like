@@ -14,7 +14,7 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(private val authRepository: AuthRepository) :
     BaseViewModel() {
     private val _loginForm = MutableLiveData<LoginFormState>()
-    val loginFormState: LiveData<LoginFormState> = _loginForm
+    val formState: LiveData<LoginFormState> = _loginForm
 
     fun login(
         email: String,
@@ -25,7 +25,7 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
         callback(result)
     }
 
-    fun loginDataChanged(email: String, password: String) {
+    fun updateFormData(email: String, password: String) {
         val emailError = validateEmail(email)
         val passwordError = validatePassword(password)
         val empty = setOf(email, password).any { it.isEmpty() }

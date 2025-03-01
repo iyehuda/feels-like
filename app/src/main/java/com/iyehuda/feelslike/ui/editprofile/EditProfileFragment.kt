@@ -1,40 +1,32 @@
 package com.iyehuda.feelslike.ui.editprofile
 
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.annotation.StringRes
 import androidx.core.widget.doAfterTextChanged
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.data.utils.explainableErrorOrNull
 import com.iyehuda.feelslike.databinding.FragmentEditProfileBinding
+import com.iyehuda.feelslike.ui.base.BaseFragment
 import com.iyehuda.feelslike.ui.utils.ImagePicker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class EditProfileFragment : Fragment() {
+class EditProfileFragment : BaseFragment<FragmentEditProfileBinding>() {
     private val viewModel: EditProfileViewModel by viewModels()
-    private var _binding: FragmentEditProfileBinding? = null
-    private val binding get() = _binding!!
 
-    override fun onCreateView(
+    override fun createBinding(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        _binding = FragmentEditProfileBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    ) = FragmentEditProfileBinding.inflate(inflater, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -51,7 +43,9 @@ class EditProfileFragment : Fragment() {
         }
 
         viewModel.selectedAvatar.observe(viewLifecycleOwner) {
-            Glide.with(this).load(it).circleCrop().into(binding.editAvatarImageButton)
+            if (it != Uri.EMPTY) {
+                Glide.with(this).load(it).circleCrop().into(binding.editAvatarImageButton)
+            }
         }
 
         viewModel.formState.observe(viewLifecycleOwner) {
@@ -98,7 +92,6 @@ class EditProfileFragment : Fragment() {
     private fun submitForm() {
         binding.loadingProgressBar.visibility = View.VISIBLE
 
-        // TODO: Use uiState
         viewModel.updateProfile(
             binding.displayNameEditText.text.toString(),
             viewModel.selectedAvatar.value!!,
@@ -113,34 +106,12 @@ class EditProfileFragment : Fragment() {
         binding.loadingProgressBar.visibility = View.GONE
 
         signupResult.explainableErrorOrNull()?.let {
-            onSubmitFailure(it)
+            displayToast(it)
         }
 
         signupResult.getOrNull()?.let {
-            onSubmitSuccess()
+            displayToast(R.string.profile_edit_succeeded)
+            goBack()
         }
-    }
-
-    private fun onSubmitSuccess() {
-        displayToast(getString(R.string.profile_edit_succeeded))
-        goBack()
-    }
-
-    private fun onSubmitFailure(@StringRes errorString: Int) = displayToast(getString(errorString))
-
-    // TODO: Move to FeelsLikeBaseFragment
-    private fun goBack() {
-        findNavController().popBackStack()
-    }
-
-    private fun displayToast(message: String) {
-        context?.applicationContext?.let { appContext ->
-            Toast.makeText(appContext, message, Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

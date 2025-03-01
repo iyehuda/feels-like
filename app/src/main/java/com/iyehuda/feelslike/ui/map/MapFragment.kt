@@ -4,35 +4,25 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.iyehuda.feelslike.databinding.FragmentMapBinding
+import com.iyehuda.feelslike.ui.base.BaseFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MapFragment : Fragment() {
-    private var _binding: FragmentMapBinding? = null
-    private val binding get() = _binding!!
+class MapFragment : BaseFragment<FragmentMapBinding>() {
     private val viewModel: MapViewModel by viewModels()
 
-    override fun onCreateView(
+    override fun createBinding(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        _binding = FragmentMapBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+    ) = FragmentMapBinding.inflate(inflater, container, false)
 
-        val textView: TextView = binding.textMap
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         viewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+            binding.textMap.text = it
         }
-        return root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }
