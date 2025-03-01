@@ -9,13 +9,13 @@ import android.view.ViewGroup
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.data.utils.explainableErrorOrNull
 import com.iyehuda.feelslike.databinding.FragmentEditProfileBinding
 import com.iyehuda.feelslike.ui.base.BaseFragment
 import com.iyehuda.feelslike.ui.utils.ImagePicker
+import com.iyehuda.feelslike.ui.utils.ImageUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -44,7 +44,7 @@ class EditProfileFragment : BaseFragment<FragmentEditProfileBinding>() {
 
         viewModel.selectedAvatar.observe(viewLifecycleOwner) {
             if (it != Uri.EMPTY) {
-                Glide.with(this).load(it).circleCrop().into(binding.editAvatarImageButton)
+                ImageUtil.loadImage(this, binding.editAvatarImageButton, it, true)
             }
         }
 
