@@ -14,6 +14,24 @@ class HomeViewModel : ViewModel() {
         loadMockPosts()
     }
 
+    private val _temperature = MutableLiveData<String>()
+    val temperature: LiveData<String> get() = _temperature
+
+    private val _condition = MutableLiveData<String>()
+    val condition: LiveData<String> get() = _condition
+
+    private val _location = MutableLiveData<String>()
+    val location: LiveData<String> get() = _location
+
+    fun fetchWeather() {
+        // Make a network call or use a repository to get weather data
+        // ...
+        // Then post values:
+        _temperature.value = "23°C"
+        _condition.value = "Sunny"
+        _location.value = "Tel Aviv, Israel"
+    }
+
     private fun loadMockPosts() {
         _posts.value = listOf(
             Post(

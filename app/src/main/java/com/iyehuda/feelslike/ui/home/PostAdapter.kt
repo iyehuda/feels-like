@@ -8,14 +8,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.iyehuda.feelslike.data.model.Post
 import com.iyehuda.feelslike.databinding.ItemPostBinding
 
-class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
+class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(DIFF_CALLBACK) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-        val binding = ItemPostBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
+        val binding = ItemPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return PostViewHolder(binding)
     }
 
@@ -26,28 +22,30 @@ class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallba
 
     class PostViewHolder(private val binding: ItemPostBinding) :
         RecyclerView.ViewHolder(binding.root) {
-
         fun bind(post: Post) {
-            binding.apply {
-                // Assuming your item layout has these views.
-                usernameTextView.text = post.username
-                weatherTextView.text = post.weather
-                temperatureTextView.text = "${post.temperature}°C"
-                descriptionTextView.text = post.description
+            // Use the view IDs defined in item_post.xml.
+            // Adjust these if your actual IDs differ.
+            binding.tvUsername.text = post.username
+            binding.tvPostWeather.text = "${post.weather}, ${post.temperature}°C"
+            binding.tvPostDescription.text = post.description
 
-                // Optionally load an image if available (e.g., using Glide or Picasso)
-                // if (post.imageUrl != null) {
-                //     Glide.with(itemView.context).load(post.imageUrl).into(postImageView)
-                // }
-            }
+            // If you have an ImageView for the post image or user profile,
+            // you can load them using an image loading library (Glide, Coil, etc.)
+            // For example:
+            // Glide.with(binding.ivUserProfile.context)
+            //      .load(post.profileImageUrl)
+            //      .placeholder(R.drawable.ic_profile_placeholder)
+            //      .into(binding.ivUserProfile)
         }
     }
-}
 
-class PostDiffCallback : DiffUtil.ItemCallback<Post>() {
-    override fun areItemsTheSame(oldItem: Post, newItem: Post): Boolean =
-        oldItem.id == newItem.id
+    companion object {
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Post>() {
+            override fun areItemsTheSame(oldItem: Post, newItem: Post): Boolean =
+                oldItem.id == newItem.id
 
-    override fun areContentsTheSame(oldItem: Post, newItem: Post): Boolean =
-        oldItem == newItem
+            override fun areContentsTheSame(oldItem: Post, newItem: Post): Boolean =
+                oldItem == newItem
+        }
+    }
 }

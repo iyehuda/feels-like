@@ -43,6 +43,18 @@ class HomeFragment : Fragment() {
             postAdapter.submitList(posts)
         }
 
+        viewModel.temperature.observe(viewLifecycleOwner) { temp ->
+            binding.tvTemperature.text = temp
+        }
+
+        viewModel.condition.observe(viewLifecycleOwner) { cond ->
+            binding.tvWeatherCondition.text = cond
+        }
+
+        viewModel.location.observe(viewLifecycleOwner) { loc ->
+            binding.tvLocation.text = loc
+        }
+
 
         binding.fabCreatePost.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_newPostFragment)
