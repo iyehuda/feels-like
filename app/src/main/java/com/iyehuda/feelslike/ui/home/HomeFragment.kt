@@ -14,16 +14,11 @@ import com.iyehuda.feelslike.databinding.FragmentHomeBinding
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
-    // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
-
     private lateinit var viewModel: HomeViewModel
     private lateinit var postAdapter: PostAdapter
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -31,36 +26,23 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
-
         postAdapter = PostAdapter()
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = postAdapter
         }
 
-        // Observe the posts LiveData from HomeViewModel.
+        binding.fabCreatePost.setOnClickListener {
+            // For debugging, you might log or show a Toast:
+            // Toast.makeText(requireContext(), "FAB clicked", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_homeFragment_to_newPostFragment)
+        }
+
+        // Observe the posts LiveData
         viewModel.posts.observe(viewLifecycleOwner) { posts ->
             postAdapter.submitList(posts)
         }
-
-        viewModel.temperature.observe(viewLifecycleOwner) { temp ->
-            binding.tvTemperature.text = temp
-        }
-
-        viewModel.condition.observe(viewLifecycleOwner) { cond ->
-            binding.tvWeatherCondition.text = cond
-        }
-
-        viewModel.location.observe(viewLifecycleOwner) { loc ->
-            binding.tvLocation.text = loc
-        }
-
-
-        binding.fabCreatePost.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_newPostFragment)
-        }
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

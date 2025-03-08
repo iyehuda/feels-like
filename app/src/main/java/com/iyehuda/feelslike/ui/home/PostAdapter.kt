@@ -1,10 +1,13 @@
 package com.iyehuda.feelslike.ui.home
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.Post
 import com.iyehuda.feelslike.databinding.ItemPostBinding
 
@@ -29,13 +32,15 @@ class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(DIFF_CALLBACK)
             binding.tvPostWeather.text = "${post.weather}, ${post.temperature}°C"
             binding.tvPostDescription.text = post.description
 
-            // If you have an ImageView for the post image or user profile,
-            // you can load them using an image loading library (Glide, Coil, etc.)
-            // For example:
-            // Glide.with(binding.ivUserProfile.context)
-            //      .load(post.profileImageUrl)
-            //      .placeholder(R.drawable.ic_profile_placeholder)
-            //      .into(binding.ivUserProfile)
+            if (!post.imageUrl.isNullOrEmpty()) {
+                binding.ivPostImage.visibility = View.VISIBLE
+                Glide.with(binding.ivPostImage.context)
+                    .load(post.imageUrl)
+                    .placeholder(R.drawable.ic_image_placeholder)
+                    .into(binding.ivPostImage)
+            } else {
+                binding.ivPostImage.visibility = View.GONE
+            }
         }
     }
 

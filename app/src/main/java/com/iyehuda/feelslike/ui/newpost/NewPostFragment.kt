@@ -5,9 +5,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.iyehuda.feelslike.databinding.FragmentNewPostBinding
 
 class NewPostFragment : Fragment() {
@@ -44,12 +46,24 @@ class NewPostFragment : Fragment() {
         // Existing logic for upload or cancel buttons…
         binding.btnUploadPost.setOnClickListener {
             val postText = binding.etPostText.text.toString()
-            viewModel.uploadPost(postText)
+            viewModel.uploadPost(postText,
+                onSuccess = {
+                    // Navigate back to the Home screen
+                    // If using the Navigation Component, you can pop the back stack:
+                    findNavController().popBackStack()
+                    // Alternatively, navigate to a specific destination:
+                    // findNavController().navigate(R.id.homeFragment)
+                },
+                onError = { e ->
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            )
         }
 
         binding.btnCancel.setOnClickListener {
             requireActivity().onBackPressed()
         }
+
     }
 
     override fun onDestroyView() {

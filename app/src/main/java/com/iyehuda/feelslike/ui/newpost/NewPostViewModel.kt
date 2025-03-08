@@ -4,7 +4,11 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import com.iyehuda.feelslike.data.model.Post
+import java.util.UUID
 
 class NewPostViewModel : ViewModel() {
 
@@ -17,10 +21,69 @@ class NewPostViewModel : ViewModel() {
         _postImageUri.value = uri
     }
 
-    // A mock upload function – later connect this to your repository
-    fun uploadPost(text: String) {
-        // Here, you can use _postImageUri.value (if not null) to upload the image along with the post text.
-        // For now, simply print or log the values.
-        println("Uploading post: $text, with image: ${_postImageUri.value}")
+    // Uploads the post to Firebase
+    fun uploadPost(text: String, onSuccess: () -> Unit, onError: (Exception) -> Unit) {
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user == null) {
+            onError(Exception("User not logged in"))
+            return
+        }
+
+        // Generate a unique ID for the post
+        val postId = UUID.randomUUID().toString()
+        val username = user.displayName ?: "Anonymous"
+        val weather = "Sunny" // Replace with dynamic weather info
+        val temperature = 30.0 // Replace with dynamic temperature
+        val location = "Tel Aviv, Israel" // Replace with dynamic location (or pass as parameter)
+
+        val imageUri = _postImageUri.value
+
+        if (imageUri != null) {
+            val storageRef = FirebaseStorage.getInstance().reference.child("posts/$postId.jpg")
+            storageRef.putFile(imageUri)
+                .addOnSuccessListener {
+                    storageRef.downloadUrl.addOnSuccessListener { uri ->
+                        val post = Post(
+                            id = postId,
+                            username = username,
+                            weather = weather,
+                            temperature = temperature,
+                            description = text,
+                            imageUrl = uri.toString(),
+                            location = location
+                        )
+                        savePostToFirestore(post, onSuccess, onError)
+                    }.addOnFailureListener { e -> onError(e) }
+                }
+                .addOnFailureListener { e -> onError(e) }
+        } else {
+            val post = Post(
+                id = postId,
+                username = username,
+                weather = weather,
+                temperature = temperature,
+                description = text,
+                imageUrl = null,
+                location = location
+            )
+            savePostToFirestore(post, onSuccess, onError)
+        }
+    }
+
+    // Helper function to save the post document to Firestore
+    private fun savePostToFirestore(
+        post: Post,
+        onSuccess: () -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        FirebaseFirestore.getInstance().collection("posts")
+            .document(post.id)
+            .set(post)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                onError(e)
+            }
     }
 }
