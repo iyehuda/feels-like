@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.glide)
     implementation(libs.hilt.android)
     implementation(libs.shimmer)
+    implementation(libs.firebase.firestore.ktx)
     kapt(libs.hilt.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

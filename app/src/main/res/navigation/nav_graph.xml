@@ -54,12 +54,6 @@
     </fragment>
 
     <fragment
-        android:id="@+id/home_screen"
-        android:name="com.iyehuda.feelslike.ui.home.HomeFragment"
-        android:label="Home"
-        tools:layout="@layout/fragment_home" />
-
-    <fragment
         android:id="@+id/map_screen"
         android:name="com.iyehuda.feelslike.ui.map.MapFragment"
         android:label="Map"
@@ -85,4 +79,19 @@
         android:name="com.iyehuda.feelslike.ui.editprofile.EditProfileFragment"
         android:label="Edit Profile"
         tools:layout="@layout/fragment_edit_profile" />
+
+    <fragment
+        android:id="@+id/home_screen"
+        android:name="com.iyehuda.feelslike.ui.home.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_homeFragment_to_newPostFragment"
+            app:destination="@id/newPostFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/newPostFragment"
+        android:name="com.iyehuda.feelslike.ui.newpost.NewPostFragment"
+        android:label="New Post" />
 </navigation>
