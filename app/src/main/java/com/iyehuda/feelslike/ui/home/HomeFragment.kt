@@ -6,7 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.databinding.FragmentHomeBinding
 
 class HomeFragment : Fragment() {
@@ -40,7 +42,13 @@ class HomeFragment : Fragment() {
         viewModel.posts.observe(viewLifecycleOwner) { posts ->
             postAdapter.submitList(posts)
         }
+
+
+        binding.fabCreatePost.setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_newPostFragment)
+        }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
