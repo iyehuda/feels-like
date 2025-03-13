@@ -7,5 +7,7 @@ data class Post(
     val temperature: Double = 0.0,
     val description: String = "",
     val imageUrl: String? = null,
-    val location: String = ""
+    val userId: String = "",
+    val location: String = "",
+    val createdAt: Long = System.currentTimeMillis()
 )

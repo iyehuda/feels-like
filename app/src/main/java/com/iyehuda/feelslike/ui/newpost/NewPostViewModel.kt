@@ -9,8 +9,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.iyehuda.feelslike.data.model.Post
 import java.util.UUID
+import javax.inject.Inject
 
-class NewPostViewModel : ViewModel() {
+class NewPostViewModel @Inject constructor() : ViewModel() {
+
 
     // LiveData to hold the selected image URI
     private val _postImageUri = MutableLiveData<Uri?>()
@@ -31,6 +33,7 @@ class NewPostViewModel : ViewModel() {
 
         // Generate a unique ID for the post
         val postId = UUID.randomUUID().toString()
+        val userId = user.uid
         val username = user.displayName ?: "Anonymous"
         val weather = "Sunny" // Replace with dynamic weather info
         val temperature = 30.0 // Replace with dynamic temperature
@@ -50,7 +53,8 @@ class NewPostViewModel : ViewModel() {
                             temperature = temperature,
                             description = text,
                             imageUrl = uri.toString(),
-                            location = location
+                            location = location,
+                            userId = userId
                         )
                         savePostToFirestore(post, onSuccess, onError)
                     }.addOnFailureListener { e -> onError(e) }
@@ -64,7 +68,8 @@ class NewPostViewModel : ViewModel() {
                 temperature = temperature,
                 description = text,
                 imageUrl = null,
-                location = location
+                location = location,
+                userId = userId
             )
             savePostToFirestore(post, onSuccess, onError)
         }

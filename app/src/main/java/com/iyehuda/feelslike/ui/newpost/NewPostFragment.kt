@@ -7,52 +7,48 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
+import androidx.fragment.app.viewModels
 import com.iyehuda.feelslike.databinding.FragmentNewPostBinding
+import com.iyehuda.feelslike.ui.base.BaseFragment
 
-class NewPostFragment : Fragment() {
+@AndroidEntryPoint
+class NewPostFragment : BaseFragment<FragmentNewPostBinding>() {
 
-    private var _binding: FragmentNewPostBinding? = null
-    private val binding get() = _binding!!
-
-    private lateinit var viewModel: NewPostViewModel
+    // Hilt view model injection
+    private val viewModel: NewPostViewModel by viewModels()
 
     // Register the image picker ActivityResultLauncher
-    private val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let {
-            // Update the image placeholder with the selected image
-            binding.imagePlaceholder.setImageURI(it)
-            // Pass the selected image URI to the ViewModel (for later upload, etc.)
-            viewModel.setPostImage(it)
+    private val imagePickerLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let {
+                // Update the image placeholder with the selected image
+                binding.imagePlaceholder.setImageURI(it)
+                // Pass the selected image URI to the ViewModel (for later upload, etc.)
+                viewModel.setPostImage(it)
+            }
         }
-    }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentNewPostBinding.inflate(inflater, container, false)
-        return binding.root
+    // Inflate binding via the createBinding function from BaseFragment
+    override fun createBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentNewPostBinding {
+        return FragmentNewPostBinding.inflate(inflater, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this).get(NewPostViewModel::class.java)
 
-        // Set a click listener on the image placeholder to launch the image picker
+        // Set click listener to launch the image picker
         binding.imagePlaceholder.setOnClickListener {
             imagePickerLauncher.launch("image/*")
         }
 
-        // Existing logic for upload or cancel buttons…
+        // Upload post button: triggers the upload logic in the ViewModel.
         binding.btnUploadPost.setOnClickListener {
             val postText = binding.etPostText.text.toString()
             viewModel.uploadPost(postText,
                 onSuccess = {
-                    // Navigate back to the Home screen
-                    // If using the Navigation Component, you can pop the back stack:
-                    findNavController().popBackStack()
-                    // Alternatively, navigate to a specific destination:
-                    // findNavController().navigate(R.id.homeFragment)
+                    // Navigate back using BaseFragment's goBack method.
+                    goBack()
                 },
                 onError = { e ->
                     Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -60,14 +56,9 @@ class NewPostFragment : Fragment() {
             )
         }
 
+        // Cancel button: use BaseFragment's goBack method to navigate back.
         binding.btnCancel.setOnClickListener {
-            requireActivity().onBackPressed()
+            goBack()
         }
-
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }
