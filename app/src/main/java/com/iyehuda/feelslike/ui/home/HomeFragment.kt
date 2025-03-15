@@ -10,7 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.databinding.FragmentHomeBinding
 import com.iyehuda.feelslike.ui.base.BaseFragment
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
     // Hilt view model injection

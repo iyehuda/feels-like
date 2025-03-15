@@ -8,9 +8,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.iyehuda.feelslike.data.model.Post
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.UUID
 import javax.inject.Inject
 
+
+@HiltViewModel
 class NewPostViewModel @Inject constructor() : ViewModel() {
 
 

@@ -12,8 +12,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        >
+        android:padding="16dp">
 
         <!-- User info row (profile image, name, location, weather, etc.) -->
         <LinearLayout
@@ -84,6 +83,17 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <!-- Progress Bar (Added Here) -->
+        <ProgressBar
+            android:id="@+id/loadingProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/etPostText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
         <!-- Upload and Cancel buttons -->
         <Button
             android:id="@+id/btnUploadPost"
@@ -91,7 +101,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/upload_post"
-            app:layout_constraintTop_toBottomOf="@id/etPostText"
+            app:layout_constraintTop_toBottomOf="@id/loadingProgressBar"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
