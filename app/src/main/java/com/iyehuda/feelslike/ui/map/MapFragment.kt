@@ -5,16 +5,18 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.location.Geocoder
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.widget.SearchView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -25,46 +27,91 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.Post
+import com.iyehuda.feelslike.databinding.FragmentMapBinding
+import com.iyehuda.feelslike.ui.utils.ImageUtil
 import java.io.IOException
 import java.util.Locale
 
 class MapFragment : Fragment(), OnMapReadyCallback {
+    private var _binding: FragmentMapBinding? = null
+    private val binding get() = _binding!!
+    
     private lateinit var map: GoogleMap
-    private val posts = mutableListOf<Post>()
-    private lateinit var searchView: SearchView
     private lateinit var geocoder: Geocoder
+    private lateinit var viewModel: MapViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_map, container, false)
+    ): View {
+        _binding = FragmentMapBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize ViewModel
+        viewModel = ViewModelProvider(this).get(MapViewModel::class.java)
+
         // Initialize geocoder
         geocoder = Geocoder(requireContext(), Locale.getDefault())
 
         // Initialize search view
-        searchView = view.findViewById(R.id.searchView)
         setupSearchView()
 
         // Initialize map
         val mapFragment = childFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+        
+        // Observe ViewModel data
+        setupObservers()
+    }
 
-        // Add mock data
-        addMockPosts()
+    private fun setupObservers() {
+        viewModel.posts.observe(viewLifecycleOwner) { postsList ->
+            if (::map.isInitialized) {
+                displayPosts(postsList)
+            }
+        }
+        
+        viewModel.searchResult.observe(viewLifecycleOwner) { location ->
+            location?.let {
+                // Move camera to the searched location
+                map.animateCamera(
+                    CameraUpdateFactory.newLatLngZoom(it, 15f),
+                    1000,
+                    null
+                )
+            }
+        }
+        
+        viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun setupSearchView() {
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                query?.let { searchLocation(it) }
+                query?.let { 
+                    viewModel.searchLocation(
+                        { locationName ->
+                            try {
+                                val addresses = geocoder.getFromLocationName(locationName, 1)
+                                if (!addresses.isNullOrEmpty()) {
+                                    val address = addresses[0]
+                                    Pair(address.latitude, address.longitude)
+                                } else null
+                            } catch (e: IOException) {
+                                throw e
+                            }
+                        },
+                        it
+                    )
+                }
                 return true
             }
 
@@ -74,60 +121,43 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         })
     }
 
-    private fun searchLocation(locationName: String) {
-        try {
-            val addresses = geocoder.getFromLocationName(locationName, 1)
-            if (!addresses.isNullOrEmpty()) {
-                val address = addresses[0]
-                val latLng = LatLng(address.latitude, address.longitude)
-
-                // Move camera to the searched location
-                map.animateCamera(
-                    CameraUpdateFactory.newLatLngZoom(latLng, 15f),
-                    1000,
-                    null
-                )
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-            // Handle error - maybe show a toast message
-        }
-    }
-
-    private fun addMockPosts() {
-        posts.addAll(listOf(
-            Post("1", LatLng(40.7128, -74.0060), "New York Post", "Content 1"),
-            Post("2", LatLng(34.0522, -118.2437), "LA Post", "Content 2"),
-            Post("3", LatLng(51.5074, -0.1278), "London Post", "Content 3"),
-            Post("4", LatLng(35.6762, 139.6503), "Tokyo Post", "Content 4"),
-            Post("5", LatLng(32.0853, 34.7818), "Tel Aviv Post", "Welcome to Tel Aviv!")
-        ))
-    }
-
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         enableMyLocation()
-        displayPosts()
-        // Center on Tel Aviv with zoom level 12
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(32.0853, 34.7818), 12f))
+        
+        // Observe posts if they're already loaded
+        viewModel.posts.value?.let { displayPosts(it) }
+        
+        // Try to get current location, otherwise use default
+        if (hasLocationPermission()) {
+            getCurrentLocation()
+        } else {
+            // Center on default location with zoom level 12
+            val defaultLocation = viewModel.getDefaultLocation()
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 12f))
+        }
     }
 
-    private fun displayPosts() {
+    private fun displayPosts(posts: List<Post>) {
+        // Clear existing markers
+        map.clear()
+        
         posts.forEach { post ->
-            // Create custom marker
+            // Create custom marker with weather information
             addCustomMarker(
                 latLng = post.location,
-                feelsLike = "Feels Hot",
-                temperature = "24°C"
+                feelsLike = post.weatherDescription,
+                temperature = post.temperature,
+                profileImageUri = post.profileImageUri
             )
+        }
 
-            // Add click listener
-            map.setOnMarkerClickListener { clickedMarker ->
-                // Show post details
-                val clickedPost = posts.find { it.location == clickedMarker.position }
-                clickedPost?.let { showPostDetails(it) }
-                true
-            }
+        // Add click listener
+        map.setOnMarkerClickListener { clickedMarker ->
+            // Show post details
+            val clickedPost = posts.find { it.location == clickedMarker.position }
+            clickedPost?.let { showPostDetails(it) }
+            true
         }
     }
 
@@ -143,13 +173,59 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         bottomSheet.show()
     }
 
+    private fun hasLocationPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun getCurrentLocation() {
+        try {
+            val locationManager = requireContext().getSystemService(android.content.Context.LOCATION_SERVICE) as android.location.LocationManager
+            val isGpsEnabled = locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)
+            
+            if (isGpsEnabled) {
+                if (ActivityCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    map.isMyLocationEnabled = true
+                    
+                    // Get last known location
+                    val fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(requireActivity())
+                    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                        if (location != null) {
+                            val currentLatLng = LatLng(location.latitude, location.longitude)
+                            map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
+                        } else {
+                            // If no last location, use default
+                            val defaultLocation = viewModel.getDefaultLocation()
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 12f))
+                        }
+                    }
+                }
+            } else {
+                // GPS is not enabled, use default location
+                val defaultLocation = viewModel.getDefaultLocation()
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 12f))
+                Toast.makeText(requireContext(), "GPS is disabled. Using default location.", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            // In case of any error, fall back to default location
+            val defaultLocation = viewModel.getDefaultLocation()
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 12f))
+        }
+    }
+
     private fun enableMyLocation() {
-        if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            map.isMyLocationEnabled = true
+        if (hasLocationPermission()) {
+            try {
+                map.isMyLocationEnabled = true
+            } catch (e: SecurityException) {
+                // Handle exception
+            }
         } else {
             // Request location permission
             ActivityCompat.requestPermissions(
@@ -177,7 +253,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         latLng: LatLng,
         feelsLike: String,
         temperature: String,
-        profileImageResource: Int? = null
+        profileImageUri: Uri? = null // Changed from Int? to Uri? to support Firebase images
     ) {
         val markerView = layoutInflater.inflate(R.layout.map_marker_layout, null)
         markerView.findViewById<TextView>(R.id.markerText).text = feelsLike
@@ -185,8 +261,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         // Set profile image if provided, otherwise use default
         val profileImageView = markerView.findViewById<ImageView>(R.id.profileImage)
-        if (profileImageResource != null) {
-            profileImageView.setImageResource(profileImageResource)
+        if (profileImageUri != null) {
+            // Use ImageUtil to load the image from Firebase
+            ImageUtil.loadImage(this, profileImageView, profileImageUri, true)
         } else {
             // Use default account icon
             profileImageView.setImageResource(R.drawable.icon_account)
@@ -214,6 +291,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         layout(0, 0, measuredWidth, measuredHeight)
         draw(canvas)
         return bitmap
+    }
+    
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     companion object {
