@@ -146,9 +146,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             // Create custom marker with weather information
             addCustomMarker(
                 latLng = post.location,
-                feelsLike = post.weatherDescription,
-                temperature = post.temperature,
-                profileImageUri = post.profileImageUri
+                feelsLike = post.weather,
+                temperature = post.temperature.toString(),
+                profileImageUri = post.imageUri
             )
         }
 
@@ -166,8 +166,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val bottomSheet = BottomSheetDialog(requireContext())
         val view = LayoutInflater.from(requireContext()).inflate(R.layout.post_details_bottom_sheet, null)
 
-        view.findViewById<TextView>(R.id.titleText).text = post.title
-        view.findViewById<TextView>(R.id.contentText).text = post.content
+        view.findViewById<TextView>(R.id.titleText).text = post.id
+        view.findViewById<TextView>(R.id.contentText).text = post.description
 
         bottomSheet.setContentView(view)
         bottomSheet.show()

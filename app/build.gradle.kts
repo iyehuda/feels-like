@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.glide)
     implementation(libs.hilt.android)
     implementation(libs.shimmer)
+    implementation(libs.firebase.firestore.ktx)
     kapt(libs.hilt.compiler)
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.gms:play-services-location:21.1.0")

@@ -38,4 +38,9 @@
     <string name="edit_avatar">Edit Avatar</string>
     <string name="profile_edit_succeeded">Profile updated successfully</string>
     <string name="update_profile_failed">Failed to update profile</string>
+
+    <string name="fab_create_post">Create Post</string>
+    <string name="how_does_it_feel_today">How does it feel today?</string>
+    <string name="upload_post">Upload Post</string>
+    <string name="cancel">Cancel</string>
 </resources>

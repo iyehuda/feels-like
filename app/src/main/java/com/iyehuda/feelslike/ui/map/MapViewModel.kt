@@ -19,19 +19,19 @@ class MapViewModel : ViewModel() {
     val errorMessage: LiveData<String> = _errorMessage
     
     init {
-        loadMockPosts()
+        //loadMockPosts()
     }
     
-    private fun loadMockPosts() {
-        val mockPosts = listOf(
-            Post("1", LatLng(40.7128, -74.0060), "New York Post", "Content 1", "28°C", "Sunny"),
-            Post("2", LatLng(34.0522, -118.2437), "LA Post", "Content 2", "24°C", "Clear"),
-            Post("3", LatLng(51.5074, -0.1278), "London Post", "Content 3", "18°C", "Cloudy"),
-            Post("4", LatLng(35.6762, 139.6503), "Tokyo Post", "Content 4", "22°C", "Partly Cloudy"),
-            Post("5", LatLng(32.0853, 34.7818), "Tel Aviv Post", "Welcome to Tel Aviv!", "30°C", "Hot and Sunny")
-        )
-        _posts.value = mockPosts
-    }
+//    private fun loadMockPosts() {
+//        val mockPosts = listOf(
+//            Post("1", LatLng(40.7128, -74.0060), "New York Post", "Content 1", "28°C", "Sunny"),
+//            Post("2", LatLng(34.0522, -118.2437), "LA Post", "Content 2", "24°C", "Clear"),
+//            Post("3", LatLng(51.5074, -0.1278), "London Post", "Content 3", "18°C", "Cloudy"),
+//            Post("4", LatLng(35.6762, 139.6503), "Tokyo Post", "Content 4", "22°C", "Partly Cloudy"),
+//            Post("5", LatLng(32.0853, 34.7818), "Tel Aviv Post", "Welcome to Tel Aviv!", "30°C", "Hot and Sunny")
+//        )
+//        _posts.value = mockPosts
+//    }
     
     fun searchLocation(geocoder: (String) -> Pair<Double, Double>?, locationName: String) {
         try {
