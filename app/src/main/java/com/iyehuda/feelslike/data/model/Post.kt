@@ -13,10 +13,16 @@ data class Post(
     val userId: String = "",
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
+    val locationString: String? = null,
     val createdAt: Long = System.currentTimeMillis()
 ) {
     val location: LatLng
-        get() = LatLng(latitude, longitude)
+        get() = if (latitude != 0.0 && longitude != 0.0) {
+            LatLng(latitude, longitude)
+        } else {
+            // Default to Tel Aviv if no coordinates are provided
+            LatLng(32.0853, 34.7818)
+        }
 
     val imageUri: Uri?
         get() = imageUrl?.let { Uri.parse(it) }

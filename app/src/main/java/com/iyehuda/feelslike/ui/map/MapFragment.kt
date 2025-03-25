@@ -31,11 +31,15 @@ import com.iyehuda.feelslike.databinding.FragmentMapBinding
 import com.iyehuda.feelslike.ui.utils.ImageUtil
 import java.io.IOException
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import androidx.lifecycle.lifecycleScope
 
 class MapFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
-    
+
     private lateinit var map: GoogleMap
     private lateinit var geocoder: Geocoder
     private lateinit var viewModel: MapViewModel
@@ -65,7 +69,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val mapFragment = childFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-        
+
         // Observe ViewModel data
         setupObservers()
     }
@@ -76,7 +80,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 displayPosts(postsList)
             }
         }
-        
+
         viewModel.searchResult.observe(viewLifecycleOwner) { location ->
             location?.let {
                 // Move camera to the searched location
@@ -87,7 +91,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 )
             }
         }
-        
+
         viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
             Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
         }
@@ -96,21 +100,38 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun setupSearchView() {
         binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                query?.let { 
-                    viewModel.searchLocation(
-                        { locationName ->
-                            try {
-                                val addresses = geocoder.getFromLocationName(locationName, 1)
-                                if (!addresses.isNullOrEmpty()) {
-                                    val address = addresses[0]
-                                    Pair(address.latitude, address.longitude)
-                                } else null
-                            } catch (e: IOException) {
-                                throw e
+                query?.let { searchQuery ->
+                    binding.searchView.clearFocus() // Hide keyboard
+
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        try {
+                            val addresses = withContext(Dispatchers.IO) {
+                                geocoder.getFromLocationName(searchQuery, 1)
                             }
-                        },
-                        it
-                    )
+
+                            if (!addresses.isNullOrEmpty() && ::map.isInitialized) {
+                                val address = addresses[0]
+                                val location = LatLng(address.latitude, address.longitude)
+                                map.animateCamera(
+                                    CameraUpdateFactory.newLatLngZoom(location, 15f),
+                                    1000,
+                                    null
+                                )
+                            } else {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Location not found",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                requireContext(),
+                                "Unable to search location",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
                 }
                 return true
             }
@@ -124,10 +145,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         enableMyLocation()
-        
+
         // Observe posts if they're already loaded
         viewModel.posts.value?.let { displayPosts(it) }
-        
+
         // Try to get current location, otherwise use default
         if (hasLocationPermission()) {
             getCurrentLocation()
@@ -141,21 +162,66 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun displayPosts(posts: List<Post>) {
         // Clear existing markers
         map.clear()
-        
+
         posts.forEach { post ->
-            // Create custom marker with weather information
-            addCustomMarker(
-                latLng = post.location,
-                feelsLike = post.weather,
-                temperature = post.temperature.toString(),
-                profileImageUri = post.imageUri
-            )
+            // If the post has a string location but no coordinates, geocode it
+            if (post.locationString != null && post.latitude == 0.0 && post.longitude == 0.0) {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    try {
+                        val addresses = withContext(Dispatchers.IO) {
+                            geocoder.getFromLocationName(post.locationString, 1)
+                        }
+                        if (!addresses.isNullOrEmpty()) {
+                            val address = addresses[0]
+                            val latLng = LatLng(address.latitude, address.longitude)
+                            // Create custom marker with weather information
+                            addCustomMarker(
+                                latLng = latLng,
+                                feelsLike = post.weather,
+                                temperature = "${post.temperature}°C",
+                                profileImageUri = post.imageUri
+                            )
+                        }
+                    } catch (e: Exception) {
+                        // If geocoding fails, use default location
+                        addCustomMarker(
+                            latLng = post.location,
+                            feelsLike = post.weather,
+                            temperature = "${post.temperature}°C",
+                            profileImageUri = post.imageUri
+                        )
+                    }
+                }
+            } else {
+                // Create custom marker with weather information
+                addCustomMarker(
+                    latLng = post.location,
+                    feelsLike = post.weather,
+                    temperature = "${post.temperature}°C",
+                    profileImageUri = post.imageUri
+                )
+            }
         }
 
         // Add click listener
         map.setOnMarkerClickListener { clickedMarker ->
             // Show post details
-            val clickedPost = posts.find { it.location == clickedMarker.position }
+            val clickedPost = posts.find { post ->
+                if (post.latitude == 0.0 && post.longitude == 0.0 && post.locationString != null) {
+                    // For posts with string locations, we need to geocode again to compare
+                    try {
+                        val addresses = geocoder.getFromLocationName(post.locationString, 1)
+                        if (!addresses.isNullOrEmpty()) {
+                            val address = addresses[0]
+                            LatLng(address.latitude, address.longitude) == clickedMarker.position
+                        } else false
+                    } catch (e: Exception) {
+                        false
+                    }
+                } else {
+                    post.location == clickedMarker.position
+                }
+            }
             clickedPost?.let { showPostDetails(it) }
             true
         }
@@ -166,7 +232,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         val bottomSheet = BottomSheetDialog(requireContext())
         val view = LayoutInflater.from(requireContext()).inflate(R.layout.post_details_bottom_sheet, null)
 
-        view.findViewById<TextView>(R.id.titleText).text = post.id
+        view.findViewById<TextView>(R.id.titleText).text = post.weather
         view.findViewById<TextView>(R.id.contentText).text = post.description
 
         bottomSheet.setContentView(view)
@@ -184,7 +250,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         try {
             val locationManager = requireContext().getSystemService(android.content.Context.LOCATION_SERVICE) as android.location.LocationManager
             val isGpsEnabled = locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)
-            
+
             if (isGpsEnabled) {
                 if (ActivityCompat.checkSelfPermission(
                         requireContext(),
@@ -192,7 +258,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     ) == PackageManager.PERMISSION_GRANTED
                 ) {
                     map.isMyLocationEnabled = true
-                    
+
                     // Get last known location
                     val fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(requireActivity())
                     fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -292,7 +358,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         draw(canvas)
         return bitmap
     }
-    
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
