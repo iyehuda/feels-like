@@ -113,4 +113,14 @@ class MapViewModel @Inject constructor() : ViewModel() {
     fun getDefaultLocation(): LatLng {
         return LatLng(32.0853, 34.7818) // Tel Aviv
     }
+
+    fun calculateOffsetPosition(latLng: LatLng, index: Int, total: Int): LatLng {
+        // Calculate a small offset based on the index
+        // This creates a circular pattern around the original position
+        val radius = 0.0001 // Approximately 10 meters
+        val angle = (2 * Math.PI * index) / total
+        val offsetLat = latLng.latitude + (radius * Math.cos(angle))
+        val offsetLng = latLng.longitude + (radius * Math.sin(angle))
+        return LatLng(offsetLat, offsetLng)
+    }
 }

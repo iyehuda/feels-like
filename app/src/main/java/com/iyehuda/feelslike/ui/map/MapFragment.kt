@@ -163,77 +163,122 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         // Clear existing markers
         map.clear()
 
-        posts.forEach { post ->
-            // If the post has a string location but no coordinates, geocode it
-            if (post.locationString != null && post.latitude == 0.0 && post.longitude == 0.0) {
-                viewLifecycleOwner.lifecycleScope.launch {
-                    try {
-                        val addresses = withContext(Dispatchers.IO) {
-                            geocoder.getFromLocationName(post.locationString, 1)
-                        }
-                        if (!addresses.isNullOrEmpty()) {
-                            val address = addresses[0]
-                            val latLng = LatLng(address.latitude, address.longitude)
-                            // Create custom marker with weather information
+        // Group posts by location
+        val postsByLocation = posts.groupBy { post ->
+            if (post.latitude == 0.0 && post.longitude == 0.0 && post.locationString != null) {
+                // For posts with string locations, use the string as the key
+                post.locationString
+            } else {
+                // For posts with coordinates, use the coordinates as the key
+                "${post.latitude},${post.longitude}"
+            }
+        }
+
+        postsByLocation.forEach { (locationKey, locationPosts) ->
+            locationPosts.forEachIndexed { index, post ->
+                val latLng = if (post.latitude == 0.0 && post.longitude == 0.0 && post.locationString != null) {
+                    // If the post has a string location but no coordinates, geocode it
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        try {
+                            val addresses = withContext(Dispatchers.IO) {
+                                geocoder.getFromLocationName(post.locationString, 1)
+                            }
+                            if (!addresses.isNullOrEmpty()) {
+                                val address = addresses[0]
+                                val originalLatLng = LatLng(address.latitude, address.longitude)
+                                // Calculate offset position
+                                val offsetLatLng = viewModel.calculateOffsetPosition(
+                                    originalLatLng,
+                                    index,
+                                    locationPosts.size
+                                )
+                                // Create custom marker with weather information
+                                addCustomMarker(
+                                    latLng = offsetLatLng,
+                                    feelsLike = post.weather,
+                                    temperature = "${post.temperature}°C",
+                                    profileImageUri = post.imageUri,
+                                    post = post // Pass the post to store with the marker
+                                )
+                            }
+                        } catch (e: Exception) {
+                            // If geocoding fails, use default location
                             addCustomMarker(
-                                latLng = latLng,
+                                latLng = post.location,
                                 feelsLike = post.weather,
                                 temperature = "${post.temperature}°C",
-                                profileImageUri = post.imageUri
+                                profileImageUri = post.imageUri,
+                                post = post // Pass the post to store with the marker
                             )
                         }
-                    } catch (e: Exception) {
-                        // If geocoding fails, use default location
-                        addCustomMarker(
-                            latLng = post.location,
-                            feelsLike = post.weather,
-                            temperature = "${post.temperature}°C",
-                            profileImageUri = post.imageUri
-                        )
                     }
+                    null // Return null for async geocoding case
+                } else {
+                    // For posts with coordinates, calculate offset position
+                    val offsetLatLng = viewModel.calculateOffsetPosition(
+                        post.location,
+                        index,
+                        locationPosts.size
+                    )
+                    // Create custom marker with weather information
+                    addCustomMarker(
+                        latLng = offsetLatLng,
+                        feelsLike = post.weather,
+                        temperature = "${post.temperature}°C",
+                        profileImageUri = post.imageUri,
+                        post = post // Pass the post to store with the marker
+                    )
+                    offsetLatLng
                 }
-            } else {
-                // Create custom marker with weather information
-                addCustomMarker(
-                    latLng = post.location,
-                    feelsLike = post.weather,
-                    temperature = "${post.temperature}°C",
-                    profileImageUri = post.imageUri
-                )
             }
         }
 
         // Add click listener
         map.setOnMarkerClickListener { clickedMarker ->
-            // Show post details
-            val clickedPost = posts.find { post ->
-                if (post.latitude == 0.0 && post.longitude == 0.0 && post.locationString != null) {
-                    // For posts with string locations, we need to geocode again to compare
-                    try {
-                        val addresses = geocoder.getFromLocationName(post.locationString, 1)
-                        if (!addresses.isNullOrEmpty()) {
-                            val address = addresses[0]
-                            LatLng(address.latitude, address.longitude) == clickedMarker.position
-                        } else false
-                    } catch (e: Exception) {
-                        false
-                    }
-                } else {
-                    post.location == clickedMarker.position
-                }
-            }
-            clickedPost?.let { showPostDetails(it) }
+            // Get the post stored with the marker
+            val post = clickedMarker.tag as? Post
+            post?.let { showPostDetails(it) }
             true
         }
     }
 
     private fun showPostDetails(post: Post) {
-        // Show a bottom sheet or dialog with post details
         val bottomSheet = BottomSheetDialog(requireContext())
         val view = LayoutInflater.from(requireContext()).inflate(R.layout.post_details_bottom_sheet, null)
 
-        view.findViewById<TextView>(R.id.titleText).text = post.weather
-        view.findViewById<TextView>(R.id.contentText).text = post.description
+        // Set username and location
+        view.findViewById<TextView>(R.id.usernameText).text = post.username ?: "Anonymous"
+        view.findViewById<TextView>(R.id.locationText).text = post.locationString ?: "Unknown Location"
+        
+        // Set temperature
+        view.findViewById<TextView>(R.id.temperatureText).text = "${post.temperature}°C"
+        
+        // Set weather and description
+        view.findViewById<TextView>(R.id.weatherText).text = post.weather
+        view.findViewById<TextView>(R.id.descriptionText).text = post.description ?: "No description"
+        
+        // Set timestamp
+        val timestamp = post.createdAt?.let { 
+            java.text.SimpleDateFormat("MMM dd, yyyy HH:mm", java.util.Locale.getDefault())
+                .format(java.util.Date(it))
+        } ?: "Unknown time"
+        view.findViewById<TextView>(R.id.timestampText).text = timestamp
+
+        // Load profile image
+        val profileImageView = view.findViewById<ImageView>(R.id.profileImage)
+        if (post.imageUrl != null) {
+            ImageUtil.loadImage(this, profileImageView, Uri.parse(post.imageUrl), true)
+        } else {
+            profileImageView.setImageResource(R.drawable.icon_account)
+        }
+
+        // Load post image
+        val postImageView = view.findViewById<ImageView>(R.id.postImage)
+        if (post.imageUrl != null) {
+            ImageUtil.loadImage(this, postImageView, Uri.parse(post.imageUrl), true)
+        } else {
+            postImageView.setImageResource(R.drawable.icon_account)
+        }
 
         bottomSheet.setContentView(view)
         bottomSheet.show()
@@ -319,7 +364,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         latLng: LatLng,
         feelsLike: String,
         temperature: String,
-        profileImageUri: Uri? = null // Changed from Int? to Uri? to support Firebase images
+        profileImageUri: Uri? = null,
+        post: Post // Add post parameter
     ) {
         val markerView = layoutInflater.inflate(R.layout.map_marker_layout, null)
         markerView.findViewById<TextView>(R.id.markerText).text = feelsLike
@@ -342,7 +388,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
             .anchor(0.5f, 1.0f)  // Anchor at the bottom center of the image
 
-        map.addMarker(markerOptions)
+        val marker = map.addMarker(markerOptions)
+        marker?.tag = post // Store the post with the marker
     }
 
     // Helper extension function to convert View to Bitmap
@@ -357,6 +404,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         layout(0, 0, measuredWidth, measuredHeight)
         draw(canvas)
         return bitmap
+    }
+
+    // Helper function to calculate distance between two LatLng points
+    private fun calculateDistance(point1: LatLng, point2: LatLng): Double {
+        val results = FloatArray(1)
+        android.location.Location.distanceBetween(
+            point1.latitude,
+            point1.longitude,
+            point2.latitude,
+            point2.longitude,
+            results
+        )
+        return results[0].toDouble()
     }
 
     override fun onDestroyView() {
