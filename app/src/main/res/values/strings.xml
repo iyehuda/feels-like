@@ -43,4 +43,8 @@
     <string name="how_does_it_feel_today">How does it feel today?</string>
     <string name="upload_post">Upload Post</string>
     <string name="cancel">Cancel</string>
+    
+    <!-- Weather related strings -->
+    <string name="unable_to_get_weather">Unable to get weather information</string>
+    <string name="using_estimated_data">Using estimated weather data</string>
 </resources>

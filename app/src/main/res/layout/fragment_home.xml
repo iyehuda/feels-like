@@ -29,31 +29,77 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/tvTemperature"
+                <!-- Loading state -->
+                <ProgressBar
+                    android:id="@+id/progressBar"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="23°C"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
+                    android:layout_margin="16dp"
+                    android:visibility="visible" />
 
+                <!-- Error state -->
                 <TextView
-                    android:id="@+id/tvWeatherCondition"
+                    android:id="@+id/errorMessage"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sunny"
-                    android:textSize="16sp" />
+                    android:gravity="center"
+                    android:padding="16dp"
+                    android:text="@string/unable_to_get_weather"
+                    android:textColor="@color/design_default_color_error"
+                    android:textSize="16sp"
+                    android:visibility="gone" />
 
-                <TextView
-                    android:id="@+id/tvLocation"
-                    android:layout_width="wrap_content"
+                <!-- Weather content -->
+                <LinearLayout
+                    android:id="@+id/weatherContentLayout"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Tel Aviv, Israel"
-                    android:textSize="16sp" />
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
+                    <TextView
+                        android:id="@+id/tvTemperature"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="23°C"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvWeatherCondition"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sunny"
+                        android:textSize="16sp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvLocation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tel Aviv, Israel"
+                            android:textSize="16sp" />
+
+                        <ImageView
+                            android:id="@+id/infoIcon"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginStart="4dp"
+                            android:contentDescription="@string/using_estimated_data"
+                            android:src="@android:drawable/ic_dialog_info"
+                            android:visibility="gone" />
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
