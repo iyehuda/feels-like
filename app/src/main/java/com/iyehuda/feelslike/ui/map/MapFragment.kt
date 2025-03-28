@@ -35,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.chip.Chip
 
 class MapFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentMapBinding? = null
@@ -250,38 +251,60 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         view.findViewById<TextView>(R.id.usernameText).text = post.username ?: "Anonymous"
         view.findViewById<TextView>(R.id.locationText).text = post.locationString ?: "Unknown Location"
         
-        // Set temperature
-        view.findViewById<TextView>(R.id.temperatureText).text = "${post.temperature}°C"
+        // Set weather in chip
+        val weatherChip = view.findViewById<Chip>(R.id.weatherChip)
+        weatherChip.text = "${post.weather}, ${post.temperature}°C"
         
-        // Set weather and description
-        view.findViewById<TextView>(R.id.weatherText).text = post.weather
+        // Set description
         view.findViewById<TextView>(R.id.descriptionText).text = post.description ?: "No description"
         
-        // Set timestamp
-        val timestamp = post.createdAt?.let { 
-            java.text.SimpleDateFormat("MMM dd, yyyy HH:mm", java.util.Locale.getDefault())
-                .format(java.util.Date(it))
-        } ?: "Unknown time"
+        // Format and set timestamp
+        val timestamp = formatTimestamp(post.createdAt ?: System.currentTimeMillis())
         view.findViewById<TextView>(R.id.timestampText).text = timestamp
 
         // Load profile image
         val profileImageView = view.findViewById<ImageView>(R.id.profileImage)
-        if (post.imageUrl != null) {
-            ImageUtil.loadImage(this, profileImageView, Uri.parse(post.imageUrl), true)
+        if (post.userId.isNotEmpty()) {
+            // Try to load user profile image using userId
+            viewModel.getUserProfilePicture(post.userId) { profileImageUrl ->
+                if (profileImageUrl != null && profileImageUrl.isNotEmpty()) {
+                    ImageUtil.loadImage(this, profileImageView, Uri.parse(profileImageUrl), true)
+                } else {
+                    profileImageView.setImageResource(R.drawable.icon_account)
+                }
+            }
         } else {
             profileImageView.setImageResource(R.drawable.icon_account)
         }
 
         // Load post image
         val postImageView = view.findViewById<ImageView>(R.id.postImage)
-        if (post.imageUrl != null) {
-            ImageUtil.loadImage(this, postImageView, Uri.parse(post.imageUrl), true)
+        if (post.imageUrl != null && post.imageUrl.isNotEmpty()) {
+            ImageUtil.loadImage(this, postImageView, Uri.parse(post.imageUrl), false)
+            postImageView.visibility = View.VISIBLE
         } else {
-            postImageView.setImageResource(R.drawable.icon_account)
+            postImageView.visibility = View.GONE
         }
 
         bottomSheet.setContentView(view)
         bottomSheet.show()
+    }
+
+    // Helper function to format timestamp similarly to post feed
+    private fun formatTimestamp(timestamp: Long): String {
+        val currentTime = System.currentTimeMillis()
+        val difference = currentTime - timestamp
+        
+        return when {
+            difference < 60 * 1000 -> "Just now"
+            difference < 60 * 60 * 1000 -> "${difference / (60 * 1000)}m ago"
+            difference < 24 * 60 * 60 * 1000 -> "${difference / (60 * 60 * 1000)}h ago"
+            difference < 7 * 24 * 60 * 60 * 1000 -> "${difference / (24 * 60 * 60 * 1000)}d ago"
+            else -> {
+                val sdf = java.text.SimpleDateFormat("MMM dd", java.util.Locale.getDefault())
+                sdf.format(java.util.Date(timestamp))
+            }
+        }
     }
 
     private fun hasLocationPermission(): Boolean {

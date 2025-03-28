@@ -31,6 +31,9 @@ class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(DIFF_CALLBACK)
             binding.tvUsername.text = post.username
             binding.tvPostWeather.text = "${post.weather}, ${post.temperature}°C"
             binding.tvPostDescription.text = post.description
+            
+            // Format and set the timestamp
+            binding.tvPostTimestamp.text = formatTimestamp(post.createdAt)
 
             if (!post.imageUrl.isNullOrEmpty()) {
                 binding.ivPostImage.visibility = View.VISIBLE
@@ -40,6 +43,23 @@ class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(DIFF_CALLBACK)
                     .into(binding.ivPostImage)
             } else {
                 binding.ivPostImage.visibility = View.GONE
+            }
+        }
+        
+        private fun formatTimestamp(timestamp: Long): String {
+            val currentTime = System.currentTimeMillis()
+            val difference = currentTime - timestamp
+            
+            // Convert to appropriate time format
+            return when {
+                difference < 60 * 1000 -> "Just now"
+                difference < 60 * 60 * 1000 -> "${difference / (60 * 1000)}m ago"
+                difference < 24 * 60 * 60 * 1000 -> "${difference / (60 * 60 * 1000)}h ago"
+                difference < 7 * 24 * 60 * 60 * 1000 -> "${difference / (24 * 60 * 60 * 1000)}d ago"
+                else -> {
+                    val sdf = java.text.SimpleDateFormat("MMM dd", java.util.Locale.getDefault())
+                    sdf.format(java.util.Date(timestamp))
+                }
             }
         }
     }

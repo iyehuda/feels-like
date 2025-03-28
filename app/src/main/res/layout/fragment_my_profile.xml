@@ -51,4 +51,38 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="TextContrastCheck" />
 
+    <TextView
+        android:id="@+id/my_posts_title"
+        style="@style/FeelsLike.Text.Headline.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginStart="16dp"
+        android:text="My Posts"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/email_text_view" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/user_posts_recycler_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/my_posts_title"
+        tools:listitem="@layout/item_post" />
+
+    <TextView
+        android:id="@+id/no_posts_text_view"
+        style="@style/FeelsLike.Text.Body.Medium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="You haven't created any posts yet."
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/my_posts_title" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

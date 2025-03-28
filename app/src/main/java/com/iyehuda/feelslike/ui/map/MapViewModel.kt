@@ -123,4 +123,29 @@ class MapViewModel @Inject constructor() : ViewModel() {
         val offsetLng = latLng.longitude + (radius * Math.sin(angle))
         return LatLng(offsetLat, offsetLng)
     }
+    
+    /**
+     * Get user profile picture from Firestore by userId
+     */
+    fun getUserProfilePicture(userId: String, callback: (String?) -> Unit) {
+        if (userId.isBlank()) {
+            callback(null)
+            return
+        }
+        
+        firestore.collection("users")
+            .document(userId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    val profileImageUrl = document.getString("profilePictureUrl")
+                    callback(profileImageUrl)
+                } else {
+                    callback(null)
+                }
+            }
+            .addOnFailureListener {
+                callback(null)
+            }
+    }
 }
