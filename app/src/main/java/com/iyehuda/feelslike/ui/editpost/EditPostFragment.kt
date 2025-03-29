@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.iyehuda.feelslike.databinding.FragmentEditPostBinding
@@ -13,6 +15,7 @@ import com.iyehuda.feelslike.ui.base.BaseFragment
 import com.iyehuda.feelslike.ui.utils.ImageUtil
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class EditPostFragment : BaseFragment<FragmentEditPostBinding>() {
@@ -44,6 +47,29 @@ class EditPostFragment : BaseFragment<FragmentEditPostBinding>() {
                     btnUpdate.isEnabled = true
                     btnDelete.isEnabled = true
                 }
+            }
+        }
+
+        // Add delete button click listener
+        binding.btnDelete.setOnClickListener {
+            deletePost()
+        }
+    }
+
+    private fun deletePost() {
+        lifecycleScope.launch {
+            try {
+                viewModel.deletePost(args.postId).onSuccess {
+                    // Show success message
+                    displayToast("Post deleted successfully")
+                    // Navigate back
+                    findNavController().navigateUp()
+                }.onFailure { e ->
+                    // Show error message
+                    displayToast("Failed to delete post: ${e.message}")
+                }
+            } catch (e: Exception) {
+                displayToast("An error occurred while deleting the post")
             }
         }
     }
