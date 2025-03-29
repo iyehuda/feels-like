@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/Widget.MaterialComponents.CardView"
@@ -22,8 +21,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <!-- User profile picture -->
             <com.google.android.material.imageview.ShapeableImageView
@@ -31,10 +30,10 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:src="@drawable/ic_profile_placeholder"
-                app:shapeAppearanceOverlay="@style/CircleImageView"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearanceOverlay="@style/CircleImageView" />
 
             <!-- Username -->
             <TextView
@@ -43,12 +42,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
                 android:text="Jane Doe"
-                android:textStyle="bold"
-                android:textSize="16sp"
                 android:textColor="@android:color/black"
-                app:layout_constraintTop_toTopOf="@id/ivUserProfile"
-                app:layout_constraintStart_toEndOf="@id/ivUserProfile"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 app:layout_constraintBottom_toTopOf="@id/tvUserLocation"
+                app:layout_constraintStart_toEndOf="@id/ivUserProfile"
+                app:layout_constraintTop_toTopOf="@id/ivUserProfile"
                 tools:text="Jane Doe" />
 
             <!-- Location with icon -->
@@ -57,11 +56,11 @@
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:layout_marginStart="12dp"
-                android:src="@android:drawable/ic_menu_mylocation"
                 android:alpha="0.6"
-                app:layout_constraintTop_toBottomOf="@id/tvUsername"
+                android:src="@android:drawable/ic_menu_mylocation"
+                app:layout_constraintBottom_toBottomOf="@id/ivUserProfile"
                 app:layout_constraintStart_toEndOf="@id/ivUserProfile"
-                app:layout_constraintBottom_toBottomOf="@id/ivUserProfile" />
+                app:layout_constraintTop_toBottomOf="@id/tvUsername" />
 
             <TextView
                 android:id="@+id/tvUserLocation"
@@ -69,11 +68,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:text="Ramat Gan, Israel"
-                android:textSize="14sp"
                 android:textColor="@android:color/darker_gray"
-                app:layout_constraintTop_toBottomOf="@id/tvUsername"
-                app:layout_constraintStart_toEndOf="@id/ivLocationIcon"
+                android:textSize="14sp"
                 app:layout_constraintBottom_toBottomOf="@id/ivUserProfile"
+                app:layout_constraintStart_toEndOf="@id/ivLocationIcon"
+                app:layout_constraintTop_toBottomOf="@id/tvUsername"
                 tools:text="Ramat Gan, Israel" />
 
             <!-- Timestamp -->
@@ -83,11 +82,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:text="2h ago"
+                android:textColor="@android:color/darker_gray"
                 android:textSize="12sp"
                 android:textStyle="italic"
-                android:textColor="@android:color/darker_gray"
-                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 tools:text="2h ago" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -99,10 +98,10 @@
             android:layout_height="250dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_image_placeholder"
-            app:shapeAppearanceOverlay="@style/RoundedImageView"
-            app:layout_constraintTop_toBottomOf="@id/layoutHeader"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/layoutHeader"
+            app:shapeAppearanceOverlay="@style/RoundedImageView" />
 
         <!-- Weather card - redesigned -->
         <com.google.android.material.chip.Chip
@@ -111,14 +110,14 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:text="Sunny, 30.0°C"
-            android:textSize="14sp"
             android:textColor="#3C3C3C"
+            android:textSize="14sp"
             android:textStyle="bold"
             app:chipBackgroundColor="#F0F8FF"
             app:chipStrokeColor="#E0E0E0"
             app:chipStrokeWidth="1dp"
-            app:layout_constraintTop_toBottomOf="@id/ivPostImage"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ivPostImage" />
 
         <!-- Post description -->
         <TextView
@@ -126,12 +125,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
+            android:lineSpacingExtra="4dp"
             android:text="Feels like summer today! Perfect weather for the beach ⛱️"
             android:textSize="15sp"
-            android:lineSpacingExtra="4dp"
-            app:layout_constraintTop_toBottomOf="@id/tvPostWeather"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvPostWeather"
             tools:text="Feels like summer today! Perfect weather for the beach ⛱️" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

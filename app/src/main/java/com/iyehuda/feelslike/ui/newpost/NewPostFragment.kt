@@ -7,20 +7,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.iyehuda.feelslike.databinding.FragmentNewPostBinding
 import com.iyehuda.feelslike.ui.base.BaseFragment
 import com.iyehuda.feelslike.ui.utils.ImagePicker
 import com.iyehuda.feelslike.ui.utils.ImageUtil
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class NewPostFragment : BaseFragment<FragmentNewPostBinding>() {
 
     private val viewModel: NewPostViewModel by viewModels()
 
-    override fun createBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentNewPostBinding {
+    override fun createBinding(
+        inflater: LayoutInflater,
+        container: ViewGroup?
+    ): FragmentNewPostBinding {
         return FragmentNewPostBinding.inflate(inflater, container, false)
     }
 

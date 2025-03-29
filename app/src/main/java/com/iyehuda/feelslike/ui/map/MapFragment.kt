@@ -16,7 +16,8 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -25,25 +26,25 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.chip.Chip
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.Post
 import com.iyehuda.feelslike.databinding.FragmentMapBinding
 import com.iyehuda.feelslike.ui.utils.ImageUtil
-import java.io.IOException
-import java.util.Locale
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import androidx.lifecycle.lifecycleScope
-import com.google.android.material.chip.Chip
+import java.util.Locale
 
+@AndroidEntryPoint
 class MapFragment : Fragment(), OnMapReadyCallback {
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var map: GoogleMap
     private lateinit var geocoder: Geocoder
-    private lateinit var viewModel: MapViewModel
+    private val viewModel: MapViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,9 +57,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Initialize ViewModel
-        viewModel = ViewModelProvider(this).get(MapViewModel::class.java)
 
         // Initialize geocoder
         geocoder = Geocoder(requireContext(), Locale.getDefault())
@@ -99,7 +97,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun setupSearchView() {
-        binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
+        binding.searchView.setOnQueryTextListener(object :
+            androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let { searchQuery ->
                     binding.searchView.clearFocus() // Hide keyboard
@@ -177,60 +176,61 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         postsByLocation.forEach { (locationKey, locationPosts) ->
             locationPosts.forEachIndexed { index, post ->
-                val latLng = if (post.latitude == 0.0 && post.longitude == 0.0 && post.locationString != null) {
-                    // If the post has a string location but no coordinates, geocode it
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        try {
-                            val addresses = withContext(Dispatchers.IO) {
-                                geocoder.getFromLocationName(post.locationString, 1)
-                            }
-                            if (!addresses.isNullOrEmpty()) {
-                                val address = addresses[0]
-                                val originalLatLng = LatLng(address.latitude, address.longitude)
-                                // Calculate offset position
-                                val offsetLatLng = viewModel.calculateOffsetPosition(
-                                    originalLatLng,
-                                    index,
-                                    locationPosts.size
-                                )
-                                // Create custom marker with weather information
+                val latLng =
+                    if (post.latitude == 0.0 && post.longitude == 0.0 && post.locationString != null) {
+                        // If the post has a string location but no coordinates, geocode it
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            try {
+                                val addresses = withContext(Dispatchers.IO) {
+                                    geocoder.getFromLocationName(post.locationString, 1)
+                                }
+                                if (!addresses.isNullOrEmpty()) {
+                                    val address = addresses[0]
+                                    val originalLatLng = LatLng(address.latitude, address.longitude)
+                                    // Calculate offset position
+                                    val offsetLatLng = viewModel.calculateOffsetPosition(
+                                        originalLatLng,
+                                        index,
+                                        locationPosts.size
+                                    )
+                                    // Create custom marker with weather information
+                                    addCustomMarker(
+                                        latLng = offsetLatLng,
+                                        feelsLike = post.weather,
+                                        temperature = "${post.temperature}°C",
+                                        profileImageUri = post.imageUri,
+                                        post = post // Pass the post to store with the marker
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                // If geocoding fails, use default location
                                 addCustomMarker(
-                                    latLng = offsetLatLng,
+                                    latLng = post.location,
                                     feelsLike = post.weather,
                                     temperature = "${post.temperature}°C",
                                     profileImageUri = post.imageUri,
                                     post = post // Pass the post to store with the marker
                                 )
                             }
-                        } catch (e: Exception) {
-                            // If geocoding fails, use default location
-                            addCustomMarker(
-                                latLng = post.location,
-                                feelsLike = post.weather,
-                                temperature = "${post.temperature}°C",
-                                profileImageUri = post.imageUri,
-                                post = post // Pass the post to store with the marker
-                            )
                         }
+                        null // Return null for async geocoding case
+                    } else {
+                        // For posts with coordinates, calculate offset position
+                        val offsetLatLng = viewModel.calculateOffsetPosition(
+                            post.location,
+                            index,
+                            locationPosts.size
+                        )
+                        // Create custom marker with weather information
+                        addCustomMarker(
+                            latLng = offsetLatLng,
+                            feelsLike = post.weather,
+                            temperature = "${post.temperature}°C",
+                            profileImageUri = post.imageUri,
+                            post = post // Pass the post to store with the marker
+                        )
+                        offsetLatLng
                     }
-                    null // Return null for async geocoding case
-                } else {
-                    // For posts with coordinates, calculate offset position
-                    val offsetLatLng = viewModel.calculateOffsetPosition(
-                        post.location,
-                        index,
-                        locationPosts.size
-                    )
-                    // Create custom marker with weather information
-                    addCustomMarker(
-                        latLng = offsetLatLng,
-                        feelsLike = post.weather,
-                        temperature = "${post.temperature}°C",
-                        profileImageUri = post.imageUri,
-                        post = post // Pass the post to store with the marker
-                    )
-                    offsetLatLng
-                }
             }
         }
 
@@ -245,19 +245,22 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun showPostDetails(post: Post) {
         val bottomSheet = BottomSheetDialog(requireContext())
-        val view = LayoutInflater.from(requireContext()).inflate(R.layout.post_details_bottom_sheet, null)
+        val view =
+            LayoutInflater.from(requireContext()).inflate(R.layout.post_details_bottom_sheet, null)
 
         // Set username and location
         view.findViewById<TextView>(R.id.usernameText).text = post.username ?: "Anonymous"
-        view.findViewById<TextView>(R.id.locationText).text = post.locationString ?: "Unknown Location"
-        
+        view.findViewById<TextView>(R.id.locationText).text =
+            post.locationString ?: "Unknown Location"
+
         // Set weather in chip
         val weatherChip = view.findViewById<Chip>(R.id.weatherChip)
         weatherChip.text = "${post.weather}, ${post.temperature}°C"
-        
+
         // Set description
-        view.findViewById<TextView>(R.id.descriptionText).text = post.description ?: "No description"
-        
+        view.findViewById<TextView>(R.id.descriptionText).text =
+            post.description ?: "No description"
+
         // Format and set timestamp
         val timestamp = formatTimestamp(post.createdAt ?: System.currentTimeMillis())
         view.findViewById<TextView>(R.id.timestampText).text = timestamp
@@ -294,7 +297,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private fun formatTimestamp(timestamp: Long): String {
         val currentTime = System.currentTimeMillis()
         val difference = currentTime - timestamp
-        
+
         return when {
             difference < 60 * 1000 -> "Just now"
             difference < 60 * 60 * 1000 -> "${difference / (60 * 1000)}m ago"
@@ -316,8 +319,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun getCurrentLocation() {
         try {
-            val locationManager = requireContext().getSystemService(android.content.Context.LOCATION_SERVICE) as android.location.LocationManager
-            val isGpsEnabled = locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)
+            val locationManager =
+                requireContext().getSystemService(android.content.Context.LOCATION_SERVICE) as android.location.LocationManager
+            val isGpsEnabled =
+                locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)
 
             if (isGpsEnabled) {
                 if (ActivityCompat.checkSelfPermission(
@@ -328,7 +333,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     map.isMyLocationEnabled = true
 
                     // Get last known location
-                    val fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(requireActivity())
+                    val fusedLocationClient =
+                        com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(
+                            requireActivity()
+                        )
                     fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                         if (location != null) {
                             val currentLatLng = LatLng(location.latitude, location.longitude)
@@ -344,7 +352,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 // GPS is not enabled, use default location
                 val defaultLocation = viewModel.getDefaultLocation()
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 12f))
-                Toast.makeText(requireContext(), "GPS is disabled. Using default location.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "GPS is disabled. Using default location.",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         } catch (e: Exception) {
             // In case of any error, fall back to default location

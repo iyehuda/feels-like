@@ -35,17 +35,17 @@ class LocationService @Inject constructor(
     private val fusedLocationClient: FusedLocationProviderClient by lazy {
         LocationServices.getFusedLocationProviderClient(context)
     }
-    
+
     private val locationManager: LocationManager by lazy {
         context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     }
-    
+
     private fun isGooglePlayServicesAvailable(): Boolean {
         val googleApiAvailability = GoogleApiAvailability.getInstance()
         val resultCode = googleApiAvailability.isGooglePlayServicesAvailable(context)
         return resultCode == ConnectionResult.SUCCESS
     }
-    
+
     @SuppressLint("MissingPermission")
     suspend fun getLastLocation(): Location? {
         return try {
@@ -71,78 +71,79 @@ class LocationService @Inject constructor(
             Log.d(TAG, "Retrieved location from Google Play Services")
         } ?: getLocationUsingAndroidAPI()
     }
-    
+
     @SuppressLint("MissingPermission")
-    private suspend fun getLocationUsingAndroidAPI(): Location? = suspendCancellableCoroutine { continuation ->
-        Log.d(TAG, "Falling back to Android Location API")
-        
-        val providers = locationManager.getProviders(true)
-        var bestLocation: Location? = null
-        
-        // First try to get last known location from available providers
-        for (provider in providers) {
-            val location = locationManager.getLastKnownLocation(provider)
-            if (location != null && (bestLocation == null || location.accuracy < bestLocation.accuracy)) {
-                bestLocation = location
+    private suspend fun getLocationUsingAndroidAPI(): Location? =
+        suspendCancellableCoroutine { continuation ->
+            Log.d(TAG, "Falling back to Android Location API")
+
+            val providers = locationManager.getProviders(true)
+            var bestLocation: Location? = null
+
+            // First try to get last known location from available providers
+            for (provider in providers) {
+                val location = locationManager.getLastKnownLocation(provider)
+                if (location != null && (bestLocation == null || location.accuracy < bestLocation.accuracy)) {
+                    bestLocation = location
+                }
             }
-        }
-        
-        if (bestLocation != null) {
-            Log.d(TAG, "Got last known location from Android API")
-            continuation.resume(bestLocation)
-            return@suspendCancellableCoroutine
-        }
-        
-        // If no last known location, request a single update
-        if (providers.isNotEmpty()) {
-            val locationListener = object : LocationListener {
-                override fun onLocationChanged(location: Location) {
-                    Log.d(TAG, "Received location update from Android API")
-                    locationManager.removeUpdates(this)
-                    if (continuation.isActive) {
-                        continuation.resume(location)
+
+            if (bestLocation != null) {
+                Log.d(TAG, "Got last known location from Android API")
+                continuation.resume(bestLocation)
+                return@suspendCancellableCoroutine
+            }
+
+            // If no last known location, request a single update
+            if (providers.isNotEmpty()) {
+                val locationListener = object : LocationListener {
+                    override fun onLocationChanged(location: Location) {
+                        Log.d(TAG, "Received location update from Android API")
+                        locationManager.removeUpdates(this)
+                        if (continuation.isActive) {
+                            continuation.resume(location)
+                        }
                     }
+
+                    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+
+                    override fun onProviderEnabled(provider: String) {}
+
+                    override fun onProviderDisabled(provider: String) {}
                 }
-                
-                override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
-                
-                override fun onProviderEnabled(provider: String) {}
-                
-                override fun onProviderDisabled(provider: String) {}
-            }
-            
-            try {
-                // Request updates from the network provider as it's usually faster
-                val provider = providers.find { it == LocationManager.NETWORK_PROVIDER } 
-                    ?: providers.first()
-                locationManager.requestLocationUpdates(
-                    provider,
-                    0L,
-                    0f,
-                    locationListener
-                )
-                
-                // Cancel the listener if the coroutine is cancelled
-                continuation.invokeOnCancellation {
-                    locationManager.removeUpdates(locationListener)
+
+                try {
+                    // Request updates from the network provider as it's usually faster
+                    val provider = providers.find { it == LocationManager.NETWORK_PROVIDER }
+                        ?: providers.first()
+                    locationManager.requestLocationUpdates(
+                        provider,
+                        0L,
+                        0f,
+                        locationListener
+                    )
+
+                    // Cancel the listener if the coroutine is cancelled
+                    continuation.invokeOnCancellation {
+                        locationManager.removeUpdates(locationListener)
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error requesting location updates: ${e.message}")
+                    continuation.resume(null)
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error requesting location updates: ${e.message}")
+            } else {
+                Log.e(TAG, "No location providers available")
                 continuation.resume(null)
             }
-        } else {
-            Log.e(TAG, "No location providers available")
-            continuation.resume(null)
         }
-    }
-    
+
     @SuppressLint("MissingPermission")
     fun getLocationUpdates(intervalMs: Long = 10000): Flow<Location> = callbackFlow {
         if (isGooglePlayServicesAvailable()) {
             val locationRequest = LocationRequest.Builder(intervalMs)
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
                 .build()
-                
+
             val locationCallback = object : LocationCallback() {
                 override fun onLocationResult(result: LocationResult) {
                     result.locations.forEach { location ->
@@ -150,14 +151,14 @@ class LocationService @Inject constructor(
                     }
                 }
             }
-            
+
             try {
                 fusedLocationClient.requestLocationUpdates(
                     locationRequest,
                     locationCallback,
                     Looper.getMainLooper()
                 )
-                
+
                 awaitClose {
                     fusedLocationClient.removeLocationUpdates(locationCallback)
                 }
@@ -168,15 +169,15 @@ class LocationService @Inject constructor(
                     override fun onLocationChanged(location: Location) {
                         trySend(location)
                     }
-                    
+
                     override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
                     override fun onProviderEnabled(provider: String) {}
                     override fun onProviderDisabled(provider: String) {}
                 }
-                
+
                 val providers = locationManager.getProviders(true)
                 if (providers.isNotEmpty()) {
-                    val provider = providers.find { it == LocationManager.NETWORK_PROVIDER } 
+                    val provider = providers.find { it == LocationManager.NETWORK_PROVIDER }
                         ?: providers.first()
                     locationManager.requestLocationUpdates(
                         provider,
@@ -184,7 +185,7 @@ class LocationService @Inject constructor(
                         10f, // Minimum distance in meters
                         listener
                     )
-                    
+
                     awaitClose {
                         locationManager.removeUpdates(listener)
                     }
@@ -198,15 +199,15 @@ class LocationService @Inject constructor(
                 override fun onLocationChanged(location: Location) {
                     trySend(location)
                 }
-                
+
                 override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
                 override fun onProviderEnabled(provider: String) {}
                 override fun onProviderDisabled(provider: String) {}
             }
-            
+
             val providers = locationManager.getProviders(true)
             if (providers.isNotEmpty()) {
-                val provider = providers.find { it == LocationManager.NETWORK_PROVIDER } 
+                val provider = providers.find { it == LocationManager.NETWORK_PROVIDER }
                     ?: providers.first()
                 locationManager.requestLocationUpdates(
                     provider,
@@ -214,7 +215,7 @@ class LocationService @Inject constructor(
                     10f, // Minimum distance in meters
                     listener
                 )
-                
+
                 awaitClose {
                     locationManager.removeUpdates(listener)
                 }
@@ -223,7 +224,7 @@ class LocationService @Inject constructor(
             }
         }
     }
-    
+
     fun isLocationEnabled(): Boolean {
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
