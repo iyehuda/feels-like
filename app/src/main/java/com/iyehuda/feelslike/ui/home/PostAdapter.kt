@@ -16,11 +16,13 @@ import com.iyehuda.feelslike.ui.utils.ImageUtil
 
 class PostAdapter(
     private val resolveLocation: (Double, Double) -> String,
-    private val loadUserProfilePicture: ((String, (String?) -> Unit) -> Unit)? = null
+    private val loadUserProfilePicture: ((String, (String?) -> Unit) -> Unit)? = null,
+    private val isProfileView: Boolean = false,
+    private val onEditClick: ((Post) -> Unit)? = null
 ) : ListAdapter<Post, PostAdapter.PostViewHolder>(DIFF_CALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val binding = ItemPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PostViewHolder(resolveLocation, loadUserProfilePicture, binding)
+        return PostViewHolder(resolveLocation, loadUserProfilePicture, binding, isProfileView, onEditClick)
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
@@ -31,7 +33,9 @@ class PostAdapter(
     class PostViewHolder(
         private val resolveLocation: (Double, Double) -> String,
         private val loadUserProfilePicture: ((String, (String?) -> Unit) -> Unit)?,
-        private val binding: ItemPostBinding
+        private val binding: ItemPostBinding,
+        private val isProfileView: Boolean,
+        private val onEditClick: ((Post) -> Unit)? = null
     ) : RecyclerView.ViewHolder(binding.root) {
         @SuppressLint("SetTextI18n")
         fun bind(post: Post) {
@@ -65,6 +69,12 @@ class PostAdapter(
                         .placeholder(R.drawable.ic_image_placeholder).into(ivPostImage)
                 } else {
                     ivPostImage.visibility = View.GONE
+                }
+
+                // Show edit icon only in profile view and set click listener
+                ivEditPost.visibility = if (isProfileView) View.VISIBLE else View.GONE
+                ivEditPost.setOnClickListener {
+                    onEditClick?.invoke(post)
                 }
             }
         }

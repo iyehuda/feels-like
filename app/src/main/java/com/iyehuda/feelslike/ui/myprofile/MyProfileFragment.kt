@@ -58,7 +58,14 @@ class MyProfileFragment : BaseFragment<FragmentMyProfileBinding>() {
     }
 
     private fun setupRecyclerView() {
-        postAdapter = PostAdapter(::resolveLocation, viewModel::getUserProfilePicture)
+        postAdapter = PostAdapter(
+            resolveLocation = ::resolveLocation,
+            loadUserProfilePicture = viewModel::getUserProfilePicture,
+            isProfileView = true,
+            onEditClick = { post ->
+                findNavController().navigate(R.id.action_edit_post)
+            }
+        )
         binding.userPostsRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = postAdapter
