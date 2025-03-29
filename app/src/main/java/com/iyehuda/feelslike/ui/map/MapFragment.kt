@@ -37,6 +37,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.bumptech.glide.Glide
 
 @AndroidEntryPoint
 class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
@@ -143,7 +144,6 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
                     latLng = offsetLatLng,
                     feelsLike = post.weather,
                     temperature = "${post.temperature.toInt()}°C",
-                    profileImageUri = post.imageUrl?.toUri(),
                     post = post
                 )
             }
@@ -307,7 +307,6 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
         latLng: LatLng,
         feelsLike: String,
         temperature: String,
-        profileImageUri: Uri? = null,
         post: Post
     ) {
         val markerView = layoutInflater.inflate(R.layout.map_marker_layout, null)
@@ -316,22 +315,73 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
 
         // Set profile image if provided, otherwise use default
         val profileImageView = markerView.findViewById<ImageView>(R.id.profileImage)
-        if (profileImageUri != null) {
-            // Use ImageUtil to load the image from Firebase
-            ImageUtil.loadImage(this, profileImageView, profileImageUri, true)
+        
+        // Create marker after profile image is loaded
+        val createMarkerWithBitmap = { bitmap: Bitmap ->
+            val markerOptions = MarkerOptions()
+                .position(latLng)
+                .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+                .anchor(0.5f, 1.0f)  // Anchor at the bottom center of the image
+
+            val marker = map.addMarker(markerOptions)
+            marker?.tag = post
+        }
+        
+        // Convert view to bitmap after image is loaded
+        val createBitmapAndMarker = {
+            val bitmap = markerView.toBitmap()
+            createMarkerWithBitmap(bitmap)
+        }
+        
+        // Use userId to get profile image if available
+        if (post.userId.isNotEmpty()) {
+            viewModel.getUserProfilePicture(post.userId) { profileImageUrl ->
+                if (!profileImageUrl.isNullOrEmpty()) {
+                    // Load image and then create marker when ready
+                    Glide.with(this)
+                        .asBitmap()
+                        .load(profileImageUrl)
+                        .circleCrop()
+                        .into(object : com.bumptech.glide.request.target.SimpleTarget<Bitmap>() {
+                            override fun onResourceReady(resource: Bitmap, transition: com.bumptech.glide.request.transition.Transition<in Bitmap>?) {
+                                profileImageView.setImageBitmap(resource)
+                                createBitmapAndMarker()
+                            }
+                        })
+                } else if (post.imageUrl != null) {
+                    // Fall back to post image if profile image not found
+                    Glide.with(this)
+                        .asBitmap()
+                        .load(post.imageUrl)
+                        .circleCrop()
+                        .into(object : com.bumptech.glide.request.target.SimpleTarget<Bitmap>() {
+                            override fun onResourceReady(resource: Bitmap, transition: com.bumptech.glide.request.transition.Transition<in Bitmap>?) {
+                                profileImageView.setImageBitmap(resource)
+                                createBitmapAndMarker()
+                            }
+                        })
+                } else {
+                    profileImageView.setImageResource(R.drawable.icon_account)
+                    createBitmapAndMarker()
+                }
+            }
+        } else if (post.imageUrl != null) {
+            // Use post image if userId not available
+            Glide.with(this)
+                .asBitmap()
+                .load(post.imageUrl)
+                .circleCrop()
+                .into(object : com.bumptech.glide.request.target.SimpleTarget<Bitmap>() {
+                    override fun onResourceReady(resource: Bitmap, transition: com.bumptech.glide.request.transition.Transition<in Bitmap>?) {
+                        profileImageView.setImageBitmap(resource)
+                        createBitmapAndMarker()
+                    }
+                })
         } else {
             // Use default account icon
             profileImageView.setImageResource(R.drawable.icon_account)
+            createBitmapAndMarker()
         }
-
-        val bitmap = markerView.toBitmap()
-
-        val markerOptions =
-            MarkerOptions().position(latLng).icon(BitmapDescriptorFactory.fromBitmap(bitmap))
-                .anchor(0.5f, 1.0f)  // Anchor at the bottom center of the image
-
-        val marker = map.addMarker(markerOptions)
-        marker?.tag = post
     }
 
     // Helper extension function to convert View to Bitmap

@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.cos
 import kotlin.math.sin
+import com.google.firebase.storage.FirebaseStorage
 
 @HiltViewModel
 class MapViewModel @Inject constructor(
@@ -60,15 +61,15 @@ class MapViewModel @Inject constructor(
             return
         }
 
-        firestore.collection("users").document(userId).get().addOnSuccessListener { document ->
-            if (document != null && document.exists()) {
-                val profileImageUrl = document.getString("profilePictureUrl")
-                callback(profileImageUrl)
-            } else {
+        val storageRef = FirebaseStorage.getInstance().reference
+        val avatarRef = storageRef.child("avatars/$userId")
+        
+        avatarRef.downloadUrl
+            .addOnSuccessListener { uri ->
+                callback(uri.toString())
+            }
+            .addOnFailureListener {
                 callback(null)
             }
-        }.addOnFailureListener {
-            callback(null)
-        }
     }
 }

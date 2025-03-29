@@ -34,7 +34,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     }
 
     private fun setupRecyclerView() {
-        postAdapter = PostAdapter(::resolveLocation)
+        postAdapter = PostAdapter(::resolveLocation, viewModel::getUserProfilePicture)
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = postAdapter
