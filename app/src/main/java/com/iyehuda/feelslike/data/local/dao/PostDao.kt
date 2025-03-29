@@ -1,8 +1,11 @@
 package com.iyehuda.feelslike.data.local.dao
 
-import androidx.room.*
-import kotlinx.coroutines.flow.Flow
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import com.iyehuda.feelslike.data.local.entity.PostEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PostDao {
@@ -26,4 +29,7 @@ interface PostDao {
 
     @Query("UPDATE posts SET isSync = 1 WHERE id = :postId")
     suspend fun markPostAsSynced(postId: String)
+
+    @Query("SELECT * FROM posts WHERE username = :username ORDER BY createdAt DESC")
+    fun getPostsByUsername(username: String): Flow<List<PostEntity>>
 } 

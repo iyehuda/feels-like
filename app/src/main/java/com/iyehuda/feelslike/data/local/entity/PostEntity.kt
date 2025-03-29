@@ -2,7 +2,6 @@ package com.iyehuda.feelslike.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.android.gms.maps.model.LatLng
 import com.iyehuda.feelslike.data.model.Post
 
 @Entity(tableName = "posts")

@@ -32,7 +32,7 @@ class MyProfileFragment : BaseFragment<FragmentMyProfileBinding>() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
-        
+
         viewModel.userDetails.observe(viewLifecycleOwner) { user ->
             user?.let {
                 updateUserView(it)
@@ -42,7 +42,7 @@ class MyProfileFragment : BaseFragment<FragmentMyProfileBinding>() {
         viewModel.userPosts.observe(viewLifecycleOwner) { posts ->
             postAdapter.submitList(posts)
             Log.d(TAG, "Received ${posts.size} posts")
-            
+
             // Show/hide no posts message based on list size
             binding.noPostsTextView.isVisible = posts.isEmpty()
         }

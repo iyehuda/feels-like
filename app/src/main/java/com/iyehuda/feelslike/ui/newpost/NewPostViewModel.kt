@@ -4,18 +4,17 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.iyehuda.feelslike.data.model.Post
+import com.iyehuda.feelslike.data.repository.PostRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.util.UUID
 import javax.inject.Inject
-import com.iyehuda.feelslike.data.repository.PostRepository
-import kotlinx.coroutines.launch
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.tasks.await
 
 @HiltViewModel
 class NewPostViewModel @Inject constructor(

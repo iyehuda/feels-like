@@ -31,7 +31,7 @@ class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(DIFF_CALLBACK)
             binding.tvUsername.text = post.username
             binding.tvPostWeather.text = "${post.weather}, ${post.temperature}°C"
             binding.tvPostDescription.text = post.description
-            
+
             // Format and set the timestamp
             binding.tvPostTimestamp.text = formatTimestamp(post.createdAt)
 
@@ -45,11 +45,11 @@ class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(DIFF_CALLBACK)
                 binding.ivPostImage.visibility = View.GONE
             }
         }
-        
+
         private fun formatTimestamp(timestamp: Long): String {
             val currentTime = System.currentTimeMillis()
             val difference = currentTime - timestamp
-            
+
             // Convert to appropriate time format
             return when {
                 difference < 60 * 1000 -> "Just now"

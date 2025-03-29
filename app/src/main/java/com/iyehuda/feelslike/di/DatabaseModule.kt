@@ -15,13 +15,13 @@ import javax.inject.Singleton
 object DatabaseModule {
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
         return AppDatabase.getDatabase(context)
     }
 
     @Provides
     @Singleton
-    fun providePostDao(database: AppDatabase): PostDao {
-        return database.postDao()
+    fun providePostDao(appDatabase: AppDatabase): PostDao {
+        return appDatabase.postDao()
     }
 } 

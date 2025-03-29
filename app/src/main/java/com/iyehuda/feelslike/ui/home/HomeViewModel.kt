@@ -6,9 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.iyehuda.feelslike.data.model.Post
 import com.iyehuda.feelslike.data.model.Weather
+import com.iyehuda.feelslike.data.repository.PostRepository
 import com.iyehuda.feelslike.data.service.LocationService
 import com.iyehuda.feelslike.data.service.WeatherService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +20,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val locationService: LocationService, private val weatherService: WeatherService
+    private val postRepository: PostRepository,
+    private val locationService: LocationService,
+    private val weatherService: WeatherService
 ) : ViewModel() {
     private val tag = "HomeViewModel"
     private val generalError = "Unable to get location"
@@ -43,16 +45,12 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun fetchPosts() {
-        firestore.collection("posts").orderBy("createdAt", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    Log.e(tag, "Error fetching posts: ${error.message}", error)
-                    return@addSnapshotListener
+        viewModelScope.launch {
+            postRepository.getAllPosts()
+                .collect { posts ->
+                    _posts.value = posts
                 }
-                snapshot?.let {
-                    _posts.value = it.toObjects(Post::class.java)
-                }
-            }
+        }
     }
 
     private fun checkLocationEnabled() {
