@@ -44,7 +44,7 @@ class AuthDataSource @Inject constructor() {
     private suspend fun updateUserProfile(
         user: FirebaseUser, name: String, avatar: Uri
     ) {
-        val imageRef = Firebase.storage.reference.child("avatars/${user.uid}.jpg")
+        val imageRef = Firebase.storage.reference.child("avatars/${user.uid}")
         imageRef.putFile(avatar).await()
         val downloadUrl = imageRef.downloadUrl.await()
 
