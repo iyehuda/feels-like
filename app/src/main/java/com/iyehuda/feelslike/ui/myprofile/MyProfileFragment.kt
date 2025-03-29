@@ -58,7 +58,7 @@ class MyProfileFragment : BaseFragment<FragmentMyProfileBinding>() {
     }
 
     private fun setupRecyclerView() {
-        postAdapter = PostAdapter(::resolveLocation)
+        postAdapter = PostAdapter(::resolveLocation, viewModel::getUserProfilePicture)
         binding.userPostsRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = postAdapter

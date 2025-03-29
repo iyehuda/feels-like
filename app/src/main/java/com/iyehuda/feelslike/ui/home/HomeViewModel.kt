@@ -16,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.google.firebase.storage.FirebaseStorage
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -72,5 +73,23 @@ class HomeViewModel @Inject constructor(
     private fun setLocationError(error: String, e: Throwable? = null) {
         Log.e(tag, error, e)
         _errorMessage.value = error
+    }
+    
+    fun getUserProfilePicture(userId: String, callback: (String?) -> Unit) {
+        if (userId.isBlank()) {
+            callback(null)
+            return
+        }
+
+        val storageRef = FirebaseStorage.getInstance().reference
+        val avatarRef = storageRef.child("avatars/$userId")
+        
+        avatarRef.downloadUrl
+            .addOnSuccessListener { uri ->
+                callback(uri.toString())
+            }
+            .addOnFailureListener {
+                callback(null)
+            }
     }
 }

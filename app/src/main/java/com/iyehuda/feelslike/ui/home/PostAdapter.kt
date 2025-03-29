@@ -14,11 +14,13 @@ import com.iyehuda.feelslike.data.model.Post
 import com.iyehuda.feelslike.databinding.ItemPostBinding
 import com.iyehuda.feelslike.ui.utils.ImageUtil
 
-class PostAdapter(private val resolveLocation: (Double, Double) -> String) :
-    ListAdapter<Post, PostAdapter.PostViewHolder>(DIFF_CALLBACK) {
+class PostAdapter(
+    private val resolveLocation: (Double, Double) -> String,
+    private val loadUserProfilePicture: ((String, (String?) -> Unit) -> Unit)? = null
+) : ListAdapter<Post, PostAdapter.PostViewHolder>(DIFF_CALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val binding = ItemPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PostViewHolder(resolveLocation, binding)
+        return PostViewHolder(resolveLocation, loadUserProfilePicture, binding)
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
@@ -28,6 +30,7 @@ class PostAdapter(private val resolveLocation: (Double, Double) -> String) :
 
     class PostViewHolder(
         private val resolveLocation: (Double, Double) -> String,
+        private val loadUserProfilePicture: ((String, (String?) -> Unit) -> Unit)?,
         private val binding: ItemPostBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         @SuppressLint("SetTextI18n")
@@ -39,9 +42,25 @@ class PostAdapter(private val resolveLocation: (Double, Double) -> String) :
                 tvPostDescription.text = post.description
                 tvPostTimestamp.text = formatTimestamp(post.createdAt)
 
+                // Load profile image using userId if available
+                if (post.userId.isNotEmpty() && loadUserProfilePicture != null) {
+                    loadUserProfilePicture.invoke(post.userId) { profileImageUrl ->
+                        if (!profileImageUrl.isNullOrEmpty()) {
+                            Glide.with(ivUserProfile.context)
+                                .load(profileImageUrl.toUri())
+                                .circleCrop()
+                                .placeholder(R.drawable.ic_profile_placeholder)
+                                .into(ivUserProfile)
+                        } else {
+                            ivUserProfile.setImageResource(R.drawable.ic_profile_placeholder)
+                        }
+                    }
+                } else {
+                    ivUserProfile.setImageResource(R.drawable.ic_profile_placeholder)
+                }
+
                 if (!post.imageUrl.isNullOrEmpty()) {
                     ivPostImage.visibility = View.VISIBLE
-                    ImageUtil
                     Glide.with(ivPostImage.context).load(post.imageUrl.toUri())
                         .placeholder(R.drawable.ic_image_placeholder).into(ivPostImage)
                 } else {
