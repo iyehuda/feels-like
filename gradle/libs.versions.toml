@@ -1,7 +1,7 @@
 [versions]
-agp = "8.8.2"
-firebaseBom = "33.10.0"
-kotlin = "2.1.0"
+agp = "8.2.2"
+firebaseBom = "32.7.2"
+kotlin = "1.9.22"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -23,6 +23,7 @@ hilt = "2.55"
 shimmer = "0.5.0"
 firebaseFirestoreKtx = "25.1.2"
 playServicesMaps = "19.1.0"
+room = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -49,6 +50,9 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.r
 shimmer = { group = "com.facebook.shimmer", name = "shimmer", version.ref = "shimmer" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

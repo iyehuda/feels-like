@@ -12,11 +12,15 @@ import com.iyehuda.feelslike.data.model.Post
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.UUID
 import javax.inject.Inject
-
+import com.iyehuda.feelslike.data.repository.PostRepository
+import kotlinx.coroutines.launch
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.tasks.await
 
 @HiltViewModel
-class NewPostViewModel @Inject constructor() : ViewModel() {
-
+class NewPostViewModel @Inject constructor(
+    private val postRepository: PostRepository
+) : ViewModel() {
 
     // LiveData to hold the selected image URI
     private val _postImageUri = MutableLiveData<Uri?>()
@@ -35,66 +39,43 @@ class NewPostViewModel @Inject constructor() : ViewModel() {
             return
         }
 
-        // Generate a unique ID for the post
-        val postId = UUID.randomUUID().toString()
-        val userId = user.uid
-        val username = user.displayName ?: "Anonymous"
-        val weather = "Sunny" // Replace with dynamic weather info
-        val temperature = 30.0 // Replace with dynamic temperature
-        val location = LatLng(1.0,1.0) // Replace with dynamic location (or pass as parameter)
+        viewModelScope.launch {
+            try {
+                val postId = UUID.randomUUID().toString()
+                val userId = user.uid
+                val username = user.displayName ?: "Anonymous"
+                val weather = "Sunny" // Replace with dynamic weather info
+                val temperature = 30.0 // Replace with dynamic temperature
+                val location = LatLng(1.0, 1.0) // Replace with dynamic location
 
-        val imageUri = _postImageUri.value
+                val imageUri = _postImageUri.value
+                val imageUrl = if (imageUri != null) {
+                    uploadImage(postId, imageUri)
+                } else null
 
-        if (imageUri != null) {
-            val storageRef = FirebaseStorage.getInstance().reference.child("posts/$postId.jpg")
-            storageRef.putFile(imageUri)
-                .addOnSuccessListener {
-                    storageRef.downloadUrl.addOnSuccessListener { uri ->
-                        val post = Post(
-                            id = postId,
-                            username = username,
-                            weather = weather,
-                            temperature = temperature,
-                            description = text,
-                            imageUrl = uri.toString(),
-                            latitude = location.latitude,
-                            longitude = location.longitude,
-                            userId = userId
-                        )
-                        savePostToFirestore(post, onSuccess, onError)
-                    }.addOnFailureListener { e -> onError(e) }
-                }
-                .addOnFailureListener { e -> onError(e) }
-        } else {
-            val post = Post(
-                id = postId,
-                username = username,
-                weather = weather,
-                temperature = temperature,
-                description = text,
-                imageUrl = null,
-                latitude = location.latitude,
-                longitude = location.longitude,
-                userId = userId
-            )
-            savePostToFirestore(post, onSuccess, onError)
+                val post = Post(
+                    id = postId,
+                    username = username,
+                    weather = weather,
+                    temperature = temperature,
+                    description = text,
+                    imageUrl = imageUrl,
+                    userId = userId,
+                    latitude = location.latitude,
+                    longitude = location.longitude
+                )
+
+                postRepository.savePost(post)
+                onSuccess()
+            } catch (e: Exception) {
+                onError(e)
+            }
         }
     }
 
-    // Helper function to save the post document to Firestore
-    private fun savePostToFirestore(
-        post: Post,
-        onSuccess: () -> Unit,
-        onError: (Exception) -> Unit
-    ) {
-        FirebaseFirestore.getInstance().collection("posts")
-            .document(post.id)
-            .set(post)
-            .addOnSuccessListener {
-                onSuccess()
-            }
-            .addOnFailureListener { e ->
-                onError(e)
-            }
+    private suspend fun uploadImage(postId: String, imageUri: Uri): String {
+        val storageRef = FirebaseStorage.getInstance().reference.child("posts/$postId.jpg")
+        val uploadTask = storageRef.putFile(imageUri).await()
+        return uploadTask.storage.downloadUrl.await().toString()
     }
 }

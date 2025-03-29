@@ -1,13 +1,15 @@
 package com.iyehuda.feelslike.data.auth
 
 import android.net.Uri
-import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.auth
-import com.google.firebase.auth.userProfileChangeRequest
-import com.google.firebase.storage.storage
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.auth.ktx.userProfileChangeRequest
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.ktx.storage
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
 import com.iyehuda.feelslike.data.utils.ExplainableException
@@ -17,17 +19,20 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthDataSource @Inject constructor() {
-    fun getUser() = Firebase.auth.currentUser
+    private val auth = Firebase.auth
+    private val storage = Firebase.storage
+
+    fun getUser() = auth.currentUser
 
     suspend fun login(email: String, password: String): Result<UserDetails> {
         try {
-            val auth = Firebase.auth.signInWithEmailAndPassword(email, password).await()
-
-            return Result.success(UserDetails.fromUser(auth.user!!))
+            val authResult = auth.signInWithEmailAndPassword(email, password).await()
+            return Result.success(UserDetails.fromUser(authResult.user!!))
         } catch (e: FirebaseAuthInvalidCredentialsException) {
             return Result.failure(
                 ExplainableException(
-                    R.string.login_invalid_credentials, cause = e
+                    R.string.login_invalid_credentials,
+                    cause = e
                 )
             )
         } catch (e: Throwable) {
@@ -36,29 +41,19 @@ class AuthDataSource @Inject constructor() {
     }
 
     fun logout() {
-        Firebase.auth.signOut()
+        auth.signOut()
     }
 
     private suspend fun updateUserProfile(
         user: FirebaseUser,
         name: String,
-        avatar: Uri,
+        avatar: Uri
     ) {
-        val downloadUrl = if (user.photoUrl == avatar) {
-            avatar
-        } else {
-            val storageRef = Firebase.storage.reference
-            val avatarRef = storageRef.child("avatars/${user.uid}")
-
-            avatarRef.putFile(avatar).await()
-
-            avatarRef.downloadUrl.await()
-        }
-
-        user.updateProfile(userProfileChangeRequest {
+        val profileUpdates = userProfileChangeRequest {
             displayName = name
-            photoUri = downloadUrl
-        }).await()
+            photoUri = avatar
+        }
+        user.updateProfile(profileUpdates).await()
     }
 
     suspend fun signup(
@@ -68,7 +63,7 @@ class AuthDataSource @Inject constructor() {
         avatar: Uri,
     ): Result<UserDetails> {
         try {
-            val authResult = Firebase.auth.createUserWithEmailAndPassword(email, password).await()
+            val authResult = auth.createUserWithEmailAndPassword(email, password).await()
             val user = authResult.user!!
 
             updateUserProfile(user, name, avatar)
