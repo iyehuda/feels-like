@@ -1,28 +1,25 @@
 package com.iyehuda.feelslike.ui.home
 
+import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.iyehuda.feelslike.data.model.Post
 import com.iyehuda.feelslike.data.model.Weather
-import com.iyehuda.feelslike.data.repository.PostRepository
-import com.iyehuda.feelslike.data.service.LocationService
-import com.iyehuda.feelslike.data.service.WeatherService
+import com.iyehuda.feelslike.data.weather.WeatherRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val postRepository: PostRepository,
-    private val locationService: LocationService,
-    private val weatherService: WeatherService
+    private val weatherRepository: WeatherRepository
 ) : ViewModel() {
     private val tag = "HomeViewModel"
     private val generalError = "Unable to get location"
@@ -31,8 +28,6 @@ class HomeViewModel @Inject constructor(
     val posts: LiveData<List<Post>> get() = _posts
     private val _weather = MutableLiveData<Weather>()
     val weather: LiveData<Weather> get() = _weather
-    private val _locationEnabled = MutableLiveData<Boolean>()
-    val locationEnabled: LiveData<Boolean> get() = _locationEnabled
     private val _weatherLoading = MutableLiveData<Boolean>()
     val weatherLoading: LiveData<Boolean> get() = _weatherLoading
     private val _errorMessage = MutableLiveData<String?>()
@@ -40,47 +35,37 @@ class HomeViewModel @Inject constructor(
 
     init {
         fetchPosts()
-        checkLocationEnabled()
-        fetchWeatherData()
     }
 
     private fun fetchPosts() {
-        viewModelScope.launch {
-            postRepository.getAllPosts()
-                .collect { posts ->
-                    _posts.value = posts
+        firestore.collection("posts").orderBy("createdAt", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e(tag, "Error fetching posts: ${error.message}", error)
+                    return@addSnapshotListener
                 }
-        }
+                snapshot?.let {
+                    _posts.value = it.toObjects(Post::class.java)
+                }
+            }
     }
 
-    private fun checkLocationEnabled() {
-        try {
-            _locationEnabled.value = locationService.isLocationEnabled()
-        } catch (e: Exception) {
-            Log.e(tag, "Error checking if location is enabled: ${e.message}", e)
-            _locationEnabled.value = false
-        }
-    }
-
+    @RequiresPermission(ACCESS_FINE_LOCATION)
     fun fetchWeatherData() {
         _weatherLoading.value = true
         viewModelScope.launch {
-            locationService.getLocationUpdates().filterNotNull().distinctUntilChanged()
-                .collect { location ->
+            weatherRepository.getWeatherUpdates().collect { weatherResult ->
+                try {
+                    _weather.value = weatherResult.getOrThrow()
                     _errorMessage.value = null
-
-                    try {
-                        _weather.value = with(location) {
-                            weatherService.getWeatherByLocation(latitude, longitude).getOrThrow()
-                        }
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (e: Exception) {
-                        setLocationError(e.message ?: generalError, e)
-                    } finally {
-                        _weatherLoading.value = false
-                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    setLocationError(e.message ?: generalError, e)
+                } finally {
+                    _weatherLoading.value = false
                 }
+            }
         }
     }
 

@@ -1,12 +1,14 @@
 package com.iyehuda.feelslike.ui.newpost
 
+import android.Manifest
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.annotation.RequiresPermission
 import androidx.fragment.app.viewModels
+import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.databinding.FragmentNewPostBinding
 import com.iyehuda.feelslike.ui.base.BaseFragment
 import com.iyehuda.feelslike.ui.utils.ImagePicker
@@ -15,21 +17,40 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class NewPostFragment : BaseFragment<FragmentNewPostBinding>() {
-
     private val viewModel: NewPostViewModel by viewModels()
 
     override fun createBinding(
-        inflater: LayoutInflater,
-        container: ViewGroup?
-    ): FragmentNewPostBinding {
-        return FragmentNewPostBinding.inflate(inflater, container, false)
-    }
+        inflater: LayoutInflater, container: ViewGroup?
+    ) = FragmentNewPostBinding.inflate(inflater, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val imagePicker = ImagePicker.create(this) { uri ->
             viewModel.setPostImage(uri)
+        }
+
+        viewModel.userDetails.observe(viewLifecycleOwner) { user ->
+            user?.let {
+                binding.tvUsername.text = it.displayName
+                ImageUtil.loadImage(this, binding.ivProfile, it.photoUrl, true)
+            }
+        }
+
+        viewModel.location.observe(viewLifecycleOwner) { location ->
+            binding.tvLocation.text = resolveLocation(location.latitude, location.longitude)
+        }
+
+        viewModel.weather.observe(viewLifecycleOwner) { weather ->
+            binding.tvWeatherInfo.text = getString(
+                R.string.weather_description, weather.temperature.toInt(), weather.condition
+            )
+        }
+
+        viewModel.errorMessage.observe(viewLifecycleOwner) {
+            it?.let {
+                displayToast(it)
+            }
         }
 
         viewModel.postImageUri.observe(viewLifecycleOwner) { uri ->
@@ -47,28 +68,34 @@ class NewPostFragment : BaseFragment<FragmentNewPostBinding>() {
         binding.btnCancel.setOnClickListener {
             goBack()
         }
+
+        checkLocationPermission()
     }
 
     private fun updateImageView(uri: Uri) {
         if (uri != Uri.EMPTY) {
-            ImageUtil.loadImage(this, binding.imagePlaceholder, uri, true)
+            ImageUtil.loadImage(this, binding.imagePlaceholder, uri)
         }
     }
 
     private fun submitPost() {
-        val postText = binding.etPostText.text.toString()
+        with(binding) {
+            val postText = etPostText.text.toString()
 
-        binding.loadingProgressBar.visibility = View.VISIBLE
+            loadingProgressBar.visibility = View.VISIBLE
 
-        viewModel.uploadPost(postText,
-            onSuccess = {
-                binding.loadingProgressBar.visibility = View.GONE
+            viewModel.uploadPost(postText, onSuccess = {
+                loadingProgressBar.visibility = View.GONE
                 goBack()
-            },
-            onError = { e ->
-                binding.loadingProgressBar.visibility = View.GONE
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        )
+            }, onError = { e ->
+                loadingProgressBar.visibility = View.GONE
+                displayToast("Error: ${e.message}")
+            })
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    override fun onLocationPermissionGranted() {
+        viewModel.fetchLocationAndWeather()
     }
 }

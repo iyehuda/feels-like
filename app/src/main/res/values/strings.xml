@@ -48,4 +48,6 @@
     <string name="unable_to_get_weather">Unable to get weather information</string>
     <string name="using_estimated_data">Using estimated weather data</string>
     <string name="temperature">%1$d°C</string>
+    <string name="weather_description">%1$d°C, %2$s</string>
+    <string name="location">%1$s, %2$s</string>
 </resources>

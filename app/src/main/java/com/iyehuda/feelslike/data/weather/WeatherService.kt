@@ -1,4 +1,4 @@
-package com.iyehuda.feelslike.data.service
+package com.iyehuda.feelslike.data.weather
 
 import android.util.Log
 import com.iyehuda.feelslike.data.model.Weather

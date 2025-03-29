@@ -4,13 +4,14 @@ import android.net.Uri
 import com.google.firebase.auth.FirebaseUser
 
 data class UserDetails(
+    val userId: String,
     val email: String,
     val displayName: String,
     val photoUrl: Uri,
 ) {
     companion object {
         fun fromUser(user: FirebaseUser) = UserDetails(
-            user.email!!, user.displayName!!, user.photoUrl!!
+            user.uid, user.email!!, user.displayName!!, user.photoUrl!!
         )
     }
 }
