@@ -1,5 +1,6 @@
 package com.iyehuda.feelslike.ui.editpost
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,7 @@ import androidx.navigation.fragment.navArgs
 import com.iyehuda.feelslike.databinding.FragmentEditPostBinding
 import com.iyehuda.feelslike.ui.base.BaseFragment
 import com.iyehuda.feelslike.ui.utils.ImageUtil
+import com.iyehuda.feelslike.ui.utils.ImagePicker
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -30,6 +32,11 @@ class EditPostFragment : BaseFragment<FragmentEditPostBinding>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val imagePicker = ImagePicker.create(this) { uri ->
+            viewModel.setNewImage(uri)
+            updateImageView(uri)
+        }
 
         // Load post data
         viewModel.loadPost(args.postId)
@@ -50,9 +57,46 @@ class EditPostFragment : BaseFragment<FragmentEditPostBinding>() {
             }
         }
 
+        // Add image click listener
+        binding.imagePlaceholder.setOnClickListener {
+            imagePicker.pickSingleImage()
+        }
+
+        // Add update button click listener
+        binding.btnUpdate.setOnClickListener {
+            updatePost()
+        }
+
         // Add delete button click listener
         binding.btnDelete.setOnClickListener {
             deletePost()
+        }
+    }
+
+    private fun updateImageView(uri: Uri) {
+        if (uri != Uri.EMPTY) {
+            ImageUtil.loadImage(this, binding.imagePlaceholder, uri)
+        }
+    }
+
+    private fun updatePost() {
+        val newDescription = binding.etPostText.text.toString().trim()
+        if (newDescription.isEmpty()) {
+            displayToast("Post description cannot be empty")
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                viewModel.updatePost(args.postId, newDescription).onSuccess {
+                    displayToast("Post updated successfully")
+                    findNavController().navigateUp()
+                }.onFailure { e ->
+                    displayToast("Failed to update post: ${e.message}")
+                }
+            } catch (e: Exception) {
+                displayToast("An error occurred while updating the post")
+            }
         }
     }
 
@@ -73,4 +117,5 @@ class EditPostFragment : BaseFragment<FragmentEditPostBinding>() {
             }
         }
     }
+
 } 

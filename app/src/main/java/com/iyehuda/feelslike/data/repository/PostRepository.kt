@@ -13,12 +13,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.google.firebase.storage.FirebaseStorage
+import android.net.Uri
 
 @Singleton
 class PostRepository @Inject constructor(
     private val postDao: PostDao,
     private val firestore: FirebaseFirestore
 ) {
+    private val storage = FirebaseStorage.getInstance()
+
     fun getAllPosts(): Flow<List<Post>> {
         // Start listening to Firestore updates
         firestore.collection("posts")
@@ -120,5 +124,70 @@ class PostRepository @Inject constructor(
                 // Handle error or continue with next post
             }
         }
+    }
+
+    suspend fun deletePost(postId: String): Result<Unit> = runCatching {
+        // Get post before deletion to access the image URL
+        val post = postDao.getPostById(postId)?.toPost()
+        
+        // Delete from Firestore
+        firestore.collection("posts")
+            .document(postId)
+            .delete()
+            .await()
+
+        // Delete from local database
+        postDao.deletePost(postId)
+
+        // Delete image from storage if it exists
+        post?.imageUrl?.let { imageUrl ->
+            if (imageUrl.isNotEmpty()) {
+                FirebaseStorage.getInstance()
+                    .getReferenceFromUrl(imageUrl)
+                    .delete()
+                    .await()
+            }
+        }
+    }
+
+    suspend fun updatePost(postId: String, newDescription: String, newImageUri: Uri? = null): Result<Unit> = runCatching {
+        // Get existing post
+        val existingPost = postDao.getPostById(postId)?.toPost() 
+            ?: throw IllegalStateException("Post not found")
+
+        // Handle image update if provided
+        val imageUrl = if (newImageUri != null) {
+            // Delete old image if it exists
+            existingPost.imageUrl?.let { oldUrl ->
+                try {
+                    storage.getReferenceFromUrl(oldUrl).delete().await()
+                } catch (e: Exception) {
+                    // Ignore errors when deleting old image
+                }
+            }
+            
+            // Upload new image
+            val imageRef = storage.reference.child("posts/$postId.jpg")
+            imageRef.putFile(newImageUri).await()
+            imageRef.downloadUrl.await().toString()
+        } else {
+            existingPost.imageUrl
+        }
+
+        // Create updated post
+        val updatedPost = existingPost.copy(
+            description = newDescription,
+            imageUrl = imageUrl,
+            createdAt = System.currentTimeMillis()
+        )
+
+        // Update in Firestore
+        firestore.collection("posts")
+            .document(postId)
+            .set(updatedPost)
+            .await()
+
+        // Update in local database
+        postDao.insertPost(PostEntity.fromPost(updatedPost, true))
     }
 } 

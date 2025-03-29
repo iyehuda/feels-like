@@ -49,17 +49,6 @@
                 app:layout_constraintTop_toTopOf="@id/ivUserProfile"
                 tools:text="Jane Doe" />
 
-            <!-- Add Edit Icon -->
-            <ImageView
-                android:id="@+id/ivEditPost"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginEnd="8dp"
-                android:src="@drawable/icon_edit"
-                android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
             <!-- Location with icon -->
             <ImageView
                 android:id="@+id/ivLocationIcon"
@@ -97,6 +86,18 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="2h ago" />
+
+            <!-- Move the edit icon below the timestamp -->
+            <ImageView
+                android:id="@+id/ivEditPost"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/icon_edit"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvPostTimestamp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
