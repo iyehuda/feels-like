@@ -86,8 +86,11 @@
     <fragment
         android:id="@+id/edit_post_screen"
         android:name="com.iyehuda.feelslike.ui.editpost.EditPostFragment"
-        android:label="Edit Post"
-        tools:layout="@layout/fragment_edit_post" />
+        android:label="Edit Post">
+        <argument
+            android:name="postId"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/home_screen"
