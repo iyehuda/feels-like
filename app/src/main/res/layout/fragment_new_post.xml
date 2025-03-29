@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:paddingLeft="@dimen/fragment_horizontal_margin"
     android:paddingTop="@dimen/fragment_vertical_margin"
     android:paddingRight="@dimen/fragment_horizontal_margin"
@@ -19,17 +20,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintEnd_toEndOf="parent">
 
             <!-- Profile picture (if any) -->
             <ImageView
                 android:id="@+id/ivProfile"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:src="@drawable/ic_profile_placeholder" />
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_profile_placeholder"
+                android:layout_marginEnd="8dp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -40,14 +42,14 @@
                     android:id="@+id/tvUsername"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Jane Doe"
+                    tools:text="Jane Doe"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvLocation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Ramat Gan, Israel" />
+                    tools:text="Ramat Gan, Israel" />
             </LinearLayout>
 
             <!-- Optionally add a weather label to the right, or in a separate layout -->
@@ -56,7 +58,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:text="24°C, Sunny" />
+                tools:text="24°C, Sunny" />
         </LinearLayout>
 
         <!-- Image placeholder (for post image) -->
@@ -65,11 +67,13 @@
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:layout_marginTop="16dp"
+            android:importantForAccessibility="no"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_image_placeholder"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/userInfoLayout" />
+            app:layout_constraintTop_toBottomOf="@id/userInfoLayout"
+            tools:ignore="ImageContrastCheck" />
 
         <!-- EditText for post text -->
         <EditText
@@ -78,9 +82,13 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="@string/how_does_it_feel_today"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:minHeight="48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/imagePlaceholder" />
+            app:layout_constraintTop_toBottomOf="@id/imagePlaceholder"
+            tools:ignore="VisualLintTextFieldSize" />
 
         <!-- Progress Bar (Added Here) -->
         <ProgressBar
@@ -89,9 +97,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnCancel"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etPostText" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Upload and Cancel buttons -->
         <Button
@@ -102,7 +110,8 @@
             android:text="@string/upload_post"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/loadingProgressBar" />
+            app:layout_constraintTop_toBottomOf="@id/etPostText"
+            tools:ignore="TextContrastCheck,VisualLintButtonSize" />
 
         <Button
             android:id="@+id/btnCancel"
@@ -112,7 +121,8 @@
             android:text="@string/cancel"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btnUploadPost" />
+            app:layout_constraintTop_toBottomOf="@id/btnUploadPost"
+            tools:ignore="TextContrastCheck,VisualLintButtonSize" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

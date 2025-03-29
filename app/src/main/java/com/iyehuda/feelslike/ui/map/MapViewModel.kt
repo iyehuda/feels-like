@@ -10,14 +10,14 @@ import com.iyehuda.feelslike.data.model.Post
 import com.iyehuda.feelslike.data.repository.PostRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.io.IOException
 import javax.inject.Inject
+import kotlin.math.cos
+import kotlin.math.sin
 
 @HiltViewModel
 class MapViewModel @Inject constructor(
     private val postRepository: PostRepository
 ) : ViewModel() {
-
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val _posts = MutableLiveData<List<Post>>()
     val posts: LiveData<List<Post>> = _posts
@@ -40,20 +40,6 @@ class MapViewModel @Inject constructor(
         }
     }
 
-    fun searchLocation(geocoder: (String) -> Pair<Double, Double>?, locationName: String) {
-        try {
-            val result = geocoder(locationName)
-            if (result != null) {
-                val (latitude, longitude) = result
-                _searchResult.value = LatLng(latitude, longitude)
-            } else {
-                _errorMessage.value = "Location not found"
-            }
-        } catch (e: IOException) {
-            _errorMessage.value = "Error searching for location: ${e.message}"
-        }
-    }
-
     fun getDefaultLocation(): LatLng {
         return LatLng(32.0853, 34.7818) // Tel Aviv
     }
@@ -63,33 +49,26 @@ class MapViewModel @Inject constructor(
         // This creates a circular pattern around the original position
         val radius = 0.0001 // Approximately 10 meters
         val angle = (2 * Math.PI * index) / total
-        val offsetLat = latLng.latitude + (radius * Math.cos(angle))
-        val offsetLng = latLng.longitude + (radius * Math.sin(angle))
+        val offsetLat = latLng.latitude + (radius * cos(angle))
+        val offsetLng = latLng.longitude + (radius * sin(angle))
         return LatLng(offsetLat, offsetLng)
     }
 
-    /**
-     * Get user profile picture from Firestore by userId
-     */
     fun getUserProfilePicture(userId: String, callback: (String?) -> Unit) {
         if (userId.isBlank()) {
             callback(null)
             return
         }
 
-        firestore.collection("users")
-            .document(userId)
-            .get()
-            .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    val profileImageUrl = document.getString("profilePictureUrl")
-                    callback(profileImageUrl)
-                } else {
-                    callback(null)
-                }
-            }
-            .addOnFailureListener {
+        firestore.collection("users").document(userId).get().addOnSuccessListener { document ->
+            if (document != null && document.exists()) {
+                val profileImageUrl = document.getString("profilePictureUrl")
+                callback(profileImageUrl)
+            } else {
                 callback(null)
             }
+        }.addOnFailureListener {
+            callback(null)
+        }
     }
 }

@@ -1,13 +1,11 @@
 package com.iyehuda.feelslike.ui.home
 
 import android.Manifest
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+import androidx.annotation.RequiresPermission
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -21,15 +19,6 @@ import dagger.hilt.android.AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     private val viewModel: HomeViewModel by viewModels()
     private lateinit var postAdapter: PostAdapter
-    private val locationPermissionRequest = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { permission ->
-        if (permission) {
-            viewModel.fetchWeatherData()
-        } else {
-            showErrorState("Location permission is needed for weather information")
-        }
-    }
 
     override fun createBinding(
         inflater: LayoutInflater, container: ViewGroup?
@@ -45,7 +34,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     }
 
     private fun setupRecyclerView() {
-        postAdapter = PostAdapter()
+        postAdapter = PostAdapter(::resolveLocation)
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = postAdapter
@@ -92,12 +81,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
                 displayToast(it)
             }
         }
-
-        viewModel.locationEnabled.observe(viewLifecycleOwner) { isEnabled ->
-            if (!isEnabled) {
-                showErrorState("Please enable location services")
-            }
-        }
     }
 
     private fun showErrorState(errorMsg: String) {
@@ -109,26 +92,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         }
     }
 
-    private fun checkLocationPermission() {
-        when {
-            ContextCompat.checkSelfPermission(
-                requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                viewModel.fetchWeatherData()
-            }
-
-            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
-                displayToast("Location permission is needed to display weather information")
-                requestLocationPermission()
-            }
-
-            else -> {
-                requestLocationPermission()
-            }
-        }
-    }
-
-    private fun requestLocationPermission() {
-        locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    override fun onLocationPermissionGranted() {
+        viewModel.fetchWeatherData()
     }
 }

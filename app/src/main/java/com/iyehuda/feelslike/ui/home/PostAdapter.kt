@@ -1,5 +1,6 @@
 package com.iyehuda.feelslike.ui.home
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,12 +11,13 @@ import com.bumptech.glide.Glide
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.Post
 import com.iyehuda.feelslike.databinding.ItemPostBinding
+import com.iyehuda.feelslike.ui.utils.ImageUtil
 
-class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(DIFF_CALLBACK) {
-
+class PostAdapter(private val resolveLocation: (Double, Double) -> String) :
+    ListAdapter<Post, PostAdapter.PostViewHolder>(DIFF_CALLBACK) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val binding = ItemPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PostViewHolder(binding)
+        return PostViewHolder(resolveLocation, binding)
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
@@ -23,26 +25,27 @@ class PostAdapter : ListAdapter<Post, PostAdapter.PostViewHolder>(DIFF_CALLBACK)
         holder.bind(post)
     }
 
-    class PostViewHolder(private val binding: ItemPostBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    class PostViewHolder(
+        private val resolveLocation: (Double, Double) -> String,
+        private val binding: ItemPostBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+        @SuppressLint("SetTextI18n")
         fun bind(post: Post) {
-            // Use the view IDs defined in item_post.xml.
-            // Adjust these if your actual IDs differ.
-            binding.tvUsername.text = post.username
-            binding.tvPostWeather.text = "${post.weather}, ${post.temperature}°C"
-            binding.tvPostDescription.text = post.description
+            with(binding) {
+                tvUsername.text = post.username
+                tvUserLocation.text = resolveLocation(post.latitude, post.longitude)
+                tvPostWeather.text = "${post.temperature.toInt()}°C, ${post.weather}"
+                tvPostDescription.text = post.description
+                tvPostTimestamp.text = formatTimestamp(post.createdAt)
 
-            // Format and set the timestamp
-            binding.tvPostTimestamp.text = formatTimestamp(post.createdAt)
-
-            if (!post.imageUrl.isNullOrEmpty()) {
-                binding.ivPostImage.visibility = View.VISIBLE
-                Glide.with(binding.ivPostImage.context)
-                    .load(post.imageUri)
-                    .placeholder(R.drawable.ic_image_placeholder)
-                    .into(binding.ivPostImage)
-            } else {
-                binding.ivPostImage.visibility = View.GONE
+                if (!post.imageUrl.isNullOrEmpty()) {
+                    ivPostImage.visibility = View.VISIBLE
+                    ImageUtil
+                    Glide.with(ivPostImage.context).load(post.imageUri)
+                        .placeholder(R.drawable.ic_image_placeholder).into(ivPostImage)
+                } else {
+                    ivPostImage.visibility = View.GONE
+                }
             }
         }
 

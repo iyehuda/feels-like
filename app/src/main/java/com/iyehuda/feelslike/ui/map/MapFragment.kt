@@ -15,7 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
+import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -30,46 +30,29 @@ import com.google.android.material.chip.Chip
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.Post
 import com.iyehuda.feelslike.databinding.FragmentMapBinding
+import com.iyehuda.feelslike.ui.base.BaseFragment
 import com.iyehuda.feelslike.ui.utils.ImageUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
 
 @AndroidEntryPoint
-class MapFragment : Fragment(), OnMapReadyCallback {
-    private var _binding: FragmentMapBinding? = null
-    private val binding get() = _binding!!
-
+class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
     private lateinit var map: GoogleMap
     private lateinit var geocoder: Geocoder
     private val viewModel: MapViewModel by viewModels()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentMapBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    override fun createBinding(
+        inflater: LayoutInflater, container: ViewGroup?
+    ) = FragmentMapBinding.inflate(inflater, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize geocoder
-        geocoder = Geocoder(requireContext(), Locale.getDefault())
-
-        // Initialize search view
         setupSearchView()
-
-        // Initialize map
-        val mapFragment = childFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-
-        // Observe ViewModel data
         setupObservers()
     }
 
@@ -84,9 +67,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             location?.let {
                 // Move camera to the searched location
                 map.animateCamera(
-                    CameraUpdateFactory.newLatLngZoom(it, 15f),
-                    1000,
-                    null
+                    CameraUpdateFactory.newLatLngZoom(it, 15f), 1000, null
                 )
             }
         }
@@ -101,8 +82,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let { searchQuery ->
-                    binding.searchView.clearFocus() // Hide keyboard
-
+                    binding.searchView.clearFocus()
                     viewLifecycleOwner.lifecycleScope.launch {
                         try {
                             val addresses = withContext(Dispatchers.IO) {
@@ -113,23 +93,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                                 val address = addresses[0]
                                 val location = LatLng(address.latitude, address.longitude)
                                 map.animateCamera(
-                                    CameraUpdateFactory.newLatLngZoom(location, 15f),
-                                    1000,
-                                    null
+                                    CameraUpdateFactory.newLatLngZoom(location, 15f), 1000, null
                                 )
                             } else {
-                                Toast.makeText(
-                                    requireContext(),
-                                    "Location not found",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                displayToast("Location not found")
                             }
                         } catch (e: Exception) {
-                            Toast.makeText(
-                                requireContext(),
-                                "Unable to search location",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            displayToast("Unable to search location")
                         }
                     }
                 }
@@ -146,24 +116,19 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         map = googleMap
         enableMyLocation()
 
-        // Observe posts if they're already loaded
         viewModel.posts.value?.let { displayPosts(it) }
 
-        // Try to get current location, otherwise use default
         if (hasLocationPermission()) {
             getCurrentLocation()
         } else {
-            // Center on default location with zoom level 12
             val defaultLocation = viewModel.getDefaultLocation()
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 12f))
         }
     }
 
     private fun displayPosts(posts: List<Post>) {
-        // Clear existing markers
         map.clear()
 
-        // Group posts by location
         val postsByLocation = posts.groupBy { post ->
             if (post.latitude == 0.0 && post.longitude == 0.0 && post.locationString != null) {
                 // For posts with string locations, use the string as the key
@@ -176,61 +141,54 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         postsByLocation.forEach { (locationKey, locationPosts) ->
             locationPosts.forEachIndexed { index, post ->
-                val latLng =
-                    if (post.latitude == 0.0 && post.longitude == 0.0 && post.locationString != null) {
-                        // If the post has a string location but no coordinates, geocode it
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            try {
-                                val addresses = withContext(Dispatchers.IO) {
-                                    geocoder.getFromLocationName(post.locationString, 1)
-                                }
-                                if (!addresses.isNullOrEmpty()) {
-                                    val address = addresses[0]
-                                    val originalLatLng = LatLng(address.latitude, address.longitude)
-                                    // Calculate offset position
-                                    val offsetLatLng = viewModel.calculateOffsetPosition(
-                                        originalLatLng,
-                                        index,
-                                        locationPosts.size
-                                    )
-                                    // Create custom marker with weather information
-                                    addCustomMarker(
-                                        latLng = offsetLatLng,
-                                        feelsLike = post.weather,
-                                        temperature = "${post.temperature}°C",
-                                        profileImageUri = post.imageUri,
-                                        post = post // Pass the post to store with the marker
-                                    )
-                                }
-                            } catch (e: Exception) {
-                                // If geocoding fails, use default location
+                if (post.latitude == 0.0 && post.longitude == 0.0 && post.locationString != null) {
+                    // If the post has a string location but no coordinates, geocode it
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        try {
+                            val addresses = withContext(Dispatchers.IO) {
+                                geocoder.getFromLocationName(post.locationString, 1)
+                            }
+                            if (!addresses.isNullOrEmpty()) {
+                                val address = addresses[0]
+                                val originalLatLng = LatLng(address.latitude, address.longitude)
+                                // Calculate offset position
+                                val offsetLatLng = viewModel.calculateOffsetPosition(
+                                    originalLatLng, index, locationPosts.size
+                                )
+                                // Create custom marker with weather information
                                 addCustomMarker(
-                                    latLng = post.location,
+                                    latLng = offsetLatLng,
                                     feelsLike = post.weather,
                                     temperature = "${post.temperature}°C",
                                     profileImageUri = post.imageUri,
                                     post = post // Pass the post to store with the marker
                                 )
                             }
+                        } catch (e: Exception) {
+                            // If geocoding fails, use default location
+                            addCustomMarker(
+                                latLng = post.location,
+                                feelsLike = post.weather,
+                                temperature = "${post.temperature}°C",
+                                profileImageUri = post.imageUri,
+                                post = post // Pass the post to store with the marker
+                            )
                         }
-                        null // Return null for async geocoding case
-                    } else {
-                        // For posts with coordinates, calculate offset position
-                        val offsetLatLng = viewModel.calculateOffsetPosition(
-                            post.location,
-                            index,
-                            locationPosts.size
-                        )
-                        // Create custom marker with weather information
-                        addCustomMarker(
-                            latLng = offsetLatLng,
-                            feelsLike = post.weather,
-                            temperature = "${post.temperature}°C",
-                            profileImageUri = post.imageUri,
-                            post = post // Pass the post to store with the marker
-                        )
-                        offsetLatLng
                     }
+                } else {
+                    // For posts with coordinates, calculate offset position
+                    val offsetLatLng = viewModel.calculateOffsetPosition(
+                        post.location, index, locationPosts.size
+                    )
+                    // Create custom marker with weather information
+                    addCustomMarker(
+                        latLng = offsetLatLng,
+                        feelsLike = post.weather,
+                        temperature = "${post.temperature}°C",
+                        profileImageUri = post.imageUri,
+                        post = post // Pass the post to store with the marker
+                    )
+                }
             }
         }
 
@@ -255,7 +213,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         // Set weather in chip
         val weatherChip = view.findViewById<Chip>(R.id.weatherChip)
-        weatherChip.text = "${post.weather}, ${post.temperature}°C"
+        weatherChip.text =
+            getString(R.string.weather_description, post.temperature.toInt(), post.weather)
 
         // Set description
         view.findViewById<TextView>(R.id.descriptionText).text =
@@ -270,8 +229,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         if (post.userId.isNotEmpty()) {
             // Try to load user profile image using userId
             viewModel.getUserProfilePicture(post.userId) { profileImageUrl ->
-                if (profileImageUrl != null && profileImageUrl.isNotEmpty()) {
-                    ImageUtil.loadImage(this, profileImageView, Uri.parse(profileImageUrl), true)
+                if (!profileImageUrl.isNullOrEmpty()) {
+                    ImageUtil.loadImage(this, profileImageView, profileImageUrl.toUri(), true)
                 } else {
                     profileImageView.setImageResource(R.drawable.icon_account)
                 }
@@ -282,10 +241,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         // Load post image
         val postImageView = view.findViewById<ImageView>(R.id.postImage)
-        if (post.imageUrl != null && post.imageUrl.isNotEmpty()) {
-            ImageUtil.loadImage(this, postImageView, Uri.parse(post.imageUrl), false)
+        post.imageUri?.let {
+            ImageUtil.loadImage(this, postImageView, it, false)
             postImageView.visibility = View.VISIBLE
-        } else {
+        } ?: {
             postImageView.visibility = View.GONE
         }
 
@@ -312,8 +271,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun hasLocationPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
-            requireContext(),
-            Manifest.permission.ACCESS_FINE_LOCATION
+            requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
     }
 
@@ -326,8 +284,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
             if (isGpsEnabled) {
                 if (ActivityCompat.checkSelfPermission(
-                        requireContext(),
-                        Manifest.permission.ACCESS_FINE_LOCATION
+                        requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
                     ) == PackageManager.PERMISSION_GRANTED
                 ) {
                     map.isMyLocationEnabled = true
@@ -353,9 +310,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 val defaultLocation = viewModel.getDefaultLocation()
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 12f))
                 Toast.makeText(
-                    requireContext(),
-                    "GPS is disabled. Using default location.",
-                    Toast.LENGTH_SHORT
+                    requireContext(), "GPS is disabled. Using default location.", Toast.LENGTH_SHORT
                 ).show()
             }
         } catch (e: Exception) {
@@ -383,9 +338,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray
     ) {
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -400,7 +353,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         feelsLike: String,
         temperature: String,
         profileImageUri: Uri? = null,
-        post: Post // Add post parameter
+        post: Post
     ) {
         val markerView = layoutInflater.inflate(R.layout.map_marker_layout, null)
         markerView.findViewById<TextView>(R.id.markerText).text = feelsLike
@@ -418,45 +371,24 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         val bitmap = markerView.toBitmap()
 
-        val markerOptions = MarkerOptions()
-            .position(latLng)
-            .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
-            .anchor(0.5f, 1.0f)  // Anchor at the bottom center of the image
+        val markerOptions =
+            MarkerOptions().position(latLng).icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+                .anchor(0.5f, 1.0f)  // Anchor at the bottom center of the image
 
         val marker = map.addMarker(markerOptions)
-        marker?.tag = post // Store the post with the marker
+        marker?.tag = post
     }
 
     // Helper extension function to convert View to Bitmap
     private fun View.toBitmap(): Bitmap {
         measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
         val bitmap = Bitmap.createBitmap(
-            measuredWidth,
-            measuredHeight,
-            Bitmap.Config.ARGB_8888
+            measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888
         )
         val canvas = Canvas(bitmap)
         layout(0, 0, measuredWidth, measuredHeight)
         draw(canvas)
         return bitmap
-    }
-
-    // Helper function to calculate distance between two LatLng points
-    private fun calculateDistance(point1: LatLng, point2: LatLng): Double {
-        val results = FloatArray(1)
-        android.location.Location.distanceBetween(
-            point1.latitude,
-            point1.longitude,
-            point2.latitude,
-            point2.longitude,
-            results
-        )
-        return results[0].toDouble()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     companion object {
