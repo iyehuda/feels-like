@@ -52,10 +52,24 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        geocoder = Geocoder(requireContext())
         setupSearchView()
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         setupObservers()
+        
+        // Setup custom location button
+        binding.myLocationButton.setOnClickListener {
+            if (::map.isInitialized && hasLocationPermission()) {
+                getCurrentLocation()
+            } else {
+                ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    LOCATION_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
     }
 
     private fun setupObservers() {
@@ -116,6 +130,11 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
+        
+        // Disable the default location button, we'll use our custom button
+        map.uiSettings.isMyLocationButtonEnabled = false
+        map.uiSettings.setAllGesturesEnabled(true)
+        
         enableMyLocation()
 
         viewModel.posts.value?.let { displayPosts(it) }
