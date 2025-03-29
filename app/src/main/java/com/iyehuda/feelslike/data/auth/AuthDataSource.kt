@@ -29,8 +29,7 @@ class AuthDataSource @Inject constructor() {
         } catch (e: FirebaseAuthInvalidCredentialsException) {
             return Result.failure(
                 ExplainableException(
-                    R.string.login_invalid_credentials,
-                    cause = e
+                    R.string.login_invalid_credentials, cause = e
                 )
             )
         } catch (e: Throwable) {
@@ -43,13 +42,15 @@ class AuthDataSource @Inject constructor() {
     }
 
     private suspend fun updateUserProfile(
-        user: FirebaseUser,
-        name: String,
-        avatar: Uri
+        user: FirebaseUser, name: String, avatar: Uri
     ) {
+        val imageRef = Firebase.storage.reference.child("avatars/${user.uid}")
+        imageRef.putFile(avatar).await()
+        val downloadUrl = imageRef.downloadUrl.await()
+
         val profileUpdates = userProfileChangeRequest {
             displayName = name
-            photoUri = avatar
+            photoUri = downloadUrl
         }
         user.updateProfile(profileUpdates).await()
     }
