@@ -14,10 +14,10 @@
         android:background="@drawable/search_background"
         android:elevation="4dp"
         app:iconifiedByDefault="false"
-        app:queryHint="Search location"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:queryHint="Search location" />
 
     <fragment
         android:id="@+id/map"

@@ -128,4 +128,15 @@
         <item name="android:layout_gravity">center</item>
         <item name="android:layout_marginTop">24dp</item>
     </style>
+
+    <!-- New styles for post item images -->
+    <style name="CircleImageView">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="RoundedImageView">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
 </resources>
