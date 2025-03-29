@@ -15,6 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -130,65 +131,21 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
         map.clear()
 
         val postsByLocation = posts.groupBy { post ->
-            if (post.latitude == 0.0 && post.longitude == 0.0 && post.locationString != null) {
-                // For posts with string locations, use the string as the key
-                post.locationString
-            } else {
-                // For posts with coordinates, use the coordinates as the key
-                "${post.latitude},${post.longitude}"
-            }
+            "${post.latitude},${post.longitude}"
         }
 
-        postsByLocation.forEach { (locationKey, locationPosts) ->
+        postsByLocation.forEach { (_, locationPosts) ->
             locationPosts.forEachIndexed { index, post ->
-                if (post.latitude == 0.0 && post.longitude == 0.0 && post.locationString != null) {
-                    // If the post has a string location but no coordinates, geocode it
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        try {
-                            val addresses = withContext(Dispatchers.IO) {
-                                geocoder.getFromLocationName(post.locationString, 1)
-                            }
-                            if (!addresses.isNullOrEmpty()) {
-                                val address = addresses[0]
-                                val originalLatLng = LatLng(address.latitude, address.longitude)
-                                // Calculate offset position
-                                val offsetLatLng = viewModel.calculateOffsetPosition(
-                                    originalLatLng, index, locationPosts.size
-                                )
-                                // Create custom marker with weather information
-                                addCustomMarker(
-                                    latLng = offsetLatLng,
-                                    feelsLike = post.weather,
-                                    temperature = "${post.temperature}°C",
-                                    profileImageUri = post.imageUri,
-                                    post = post // Pass the post to store with the marker
-                                )
-                            }
-                        } catch (e: Exception) {
-                            // If geocoding fails, use default location
-                            addCustomMarker(
-                                latLng = post.location,
-                                feelsLike = post.weather,
-                                temperature = "${post.temperature}°C",
-                                profileImageUri = post.imageUri,
-                                post = post // Pass the post to store with the marker
-                            )
-                        }
-                    }
-                } else {
-                    // For posts with coordinates, calculate offset position
-                    val offsetLatLng = viewModel.calculateOffsetPosition(
-                        post.location, index, locationPosts.size
-                    )
-                    // Create custom marker with weather information
-                    addCustomMarker(
-                        latLng = offsetLatLng,
-                        feelsLike = post.weather,
-                        temperature = "${post.temperature}°C",
-                        profileImageUri = post.imageUri,
-                        post = post // Pass the post to store with the marker
-                    )
-                }
+                val offsetLatLng = viewModel.calculateOffsetPosition(
+                    post.getLocation(), index, locationPosts.size
+                )
+                addCustomMarker(
+                    latLng = offsetLatLng,
+                    feelsLike = post.weather,
+                    temperature = "${post.temperature}°C",
+                    profileImageUri = post.imageUrl?.toUri(),
+                    post = post
+                )
             }
         }
 
@@ -207,9 +164,9 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
             LayoutInflater.from(requireContext()).inflate(R.layout.post_details_bottom_sheet, null)
 
         // Set username and location
-        view.findViewById<TextView>(R.id.usernameText).text = post.username ?: "Anonymous"
+        view.findViewById<TextView>(R.id.usernameText).text = post.username
         view.findViewById<TextView>(R.id.locationText).text =
-            post.locationString ?: "Unknown Location"
+            resolveLocation(post.latitude, post.longitude)
 
         // Set weather in chip
         val weatherChip = view.findViewById<Chip>(R.id.weatherChip)
@@ -217,11 +174,10 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
             getString(R.string.weather_description, post.temperature.toInt(), post.weather)
 
         // Set description
-        view.findViewById<TextView>(R.id.descriptionText).text =
-            post.description ?: "No description"
+        view.findViewById<TextView>(R.id.descriptionText).text = post.description
 
         // Format and set timestamp
-        val timestamp = formatTimestamp(post.createdAt ?: System.currentTimeMillis())
+        val timestamp = formatTimestamp(post.createdAt)
         view.findViewById<TextView>(R.id.timestampText).text = timestamp
 
         // Load profile image
@@ -239,9 +195,8 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
             profileImageView.setImageResource(R.drawable.icon_account)
         }
 
-        // Load post image
         val postImageView = view.findViewById<ImageView>(R.id.postImage)
-        post.imageUri?.let {
+        post.imageUrl?.toUri()?.let {
             ImageUtil.loadImage(this, postImageView, it, false)
             postImageView.visibility = View.VISIBLE
         } ?: {
@@ -382,9 +337,7 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
     // Helper extension function to convert View to Bitmap
     private fun View.toBitmap(): Bitmap {
         measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
-        val bitmap = Bitmap.createBitmap(
-            measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888
-        )
+        val bitmap = createBitmap(measuredWidth, measuredHeight)
         val canvas = Canvas(bitmap)
         layout(0, 0, measuredWidth, measuredHeight)
         draw(canvas)
