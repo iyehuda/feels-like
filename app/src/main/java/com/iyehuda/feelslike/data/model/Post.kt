@@ -1,6 +1,7 @@
 package com.iyehuda.feelslike.data.model
 
 import android.net.Uri
+import androidx.core.net.toUri
 import com.google.android.gms.maps.model.LatLng
 
 data class Post(
@@ -14,16 +15,11 @@ data class Post(
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
     val locationString: String? = null,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
 ) {
     val location: LatLng
-        get() = if (latitude != 0.0 && longitude != 0.0) {
-            LatLng(latitude, longitude)
-        } else {
-            // Default to Tel Aviv if no coordinates are provided
-            LatLng(32.0853, 34.7818)
-        }
+        get() = LatLng(latitude, longitude)
 
     val imageUri: Uri?
-        get() = imageUrl?.let { Uri.parse(it) }
+        get() = imageUrl?.toUri()
 }

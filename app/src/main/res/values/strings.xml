@@ -47,4 +47,5 @@
     <!-- Weather related strings -->
     <string name="unable_to_get_weather">Unable to get weather information</string>
     <string name="using_estimated_data">Using estimated weather data</string>
+    <string name="temperature">%1$d°C</string>
 </resources>
