@@ -142,7 +142,7 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
                 addCustomMarker(
                     latLng = offsetLatLng,
                     feelsLike = post.weather,
-                    temperature = "${post.temperature}°C",
+                    temperature = "${post.temperature.toInt()}°C",
                     profileImageUri = post.imageUrl?.toUri(),
                     post = post
                 )
