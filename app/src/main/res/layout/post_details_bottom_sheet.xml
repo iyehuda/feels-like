@@ -1,23 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingBottom="16dp">
 
-    <TextView
-        android:id="@+id/titleText"
+    <!-- Header section with profile -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
+        android:padding="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- User profile picture -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/profileImage"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/icon_account"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/CircleImageView" />
+
+        <!-- Username -->
+        <TextView
+            android:id="@+id/usernameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/locationText"
+            app:layout_constraintStart_toEndOf="@id/profileImage"
+            app:layout_constraintTop_toTopOf="@id/profileImage"
+            tools:text="Jane Doe" />
+
+        <!-- Location with icon -->
+        <ImageView
+            android:id="@+id/ivLocationIcon"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="12dp"
+            android:alpha="0.6"
+            android:src="@android:drawable/ic_menu_mylocation"
+            app:layout_constraintBottom_toBottomOf="@id/profileImage"
+            app:layout_constraintStart_toEndOf="@id/profileImage"
+            app:layout_constraintTop_toBottomOf="@id/usernameText" />
+
+        <TextView
+            android:id="@+id/locationText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="@id/profileImage"
+            app:layout_constraintStart_toEndOf="@id/ivLocationIcon"
+            app:layout_constraintTop_toBottomOf="@id/usernameText"
+            tools:text="Ramat Gan, Israel" />
+
+        <!-- Timestamp -->
+        <TextView
+            android:id="@+id/timestampText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp"
+            android:textStyle="italic"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="2h ago" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Post image with rounded corners -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/postImage"
+        android:layout_width="0dp"
+        android:layout_height="250dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_image_placeholder"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutHeader"
+        app:shapeAppearanceOverlay="@style/RoundedImageView" />
+
+    <!-- Weather chip -->
+    <com.google.android.material.chip.Chip
+        android:id="@+id/weatherChip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:textColor="#3C3C3C"
+        android:textSize="14sp"
         android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        app:chipBackgroundColor="#F0F8FF"
+        app:chipStrokeColor="#E0E0E0"
+        app:chipStrokeWidth="1dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/postImage" />
 
+    <!-- Post description -->
     <TextView
-        android:id="@+id/contentText"
-        android:layout_width="match_parent"
+        android:id="@+id/descriptionText"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textSize="14sp"/>
+        android:layout_margin="16dp"
+        android:lineSpacingExtra="4dp"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/weatherChip"
+        tools:text="Feels like summer today! Perfect weather for the beach ⛱️" />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
