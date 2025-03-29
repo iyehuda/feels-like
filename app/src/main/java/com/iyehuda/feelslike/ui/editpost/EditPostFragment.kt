@@ -18,10 +18,7 @@ class EditPostFragment : BaseFragment<FragmentEditPostBinding>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Only implement cancel button functionality
-        binding.btnCancel.setOnClickListener {
-            findNavController().navigateUp()
-        }
+        // Remove cancel button functionality
 
         // Disable other buttons for now
         binding.btnUpdate.isEnabled = false
