@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -41,7 +42,7 @@ class PostAdapter(private val resolveLocation: (Double, Double) -> String) :
                 if (!post.imageUrl.isNullOrEmpty()) {
                     ivPostImage.visibility = View.VISIBLE
                     ImageUtil
-                    Glide.with(ivPostImage.context).load(post.imageUri)
+                    Glide.with(ivPostImage.context).load(post.imageUrl.toUri())
                         .placeholder(R.drawable.ic_image_placeholder).into(ivPostImage)
                 } else {
                     ivPostImage.visibility = View.GONE

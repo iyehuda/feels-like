@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "ed4cc1ee1cb32a8c094537b6e9985331",
+    "identityHash": "6d5cbb08dece5aadd01bcd99a8347177",
     "entities": [
       {
         "tableName": "posts",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `username` TEXT NOT NULL, `weather` TEXT NOT NULL, `temperature` REAL NOT NULL, `description` TEXT NOT NULL, `imageUrl` TEXT, `userId` TEXT NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `locationString` TEXT, `createdAt` INTEGER NOT NULL, `isSync` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `username` TEXT NOT NULL, `weather` TEXT NOT NULL, `temperature` REAL NOT NULL, `description` TEXT NOT NULL, `imageUrl` TEXT, `userId` TEXT NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `createdAt` INTEGER NOT NULL, `isSync` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -63,12 +63,6 @@
             "notNull": true
           },
           {
-            "fieldPath": "locationString",
-            "columnName": "locationString",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
             "fieldPath": "createdAt",
             "columnName": "createdAt",
             "affinity": "INTEGER",
@@ -94,7 +88,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ed4cc1ee1cb32a8c094537b6e9985331')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6d5cbb08dece5aadd01bcd99a8347177')"
     ]
   }
 }

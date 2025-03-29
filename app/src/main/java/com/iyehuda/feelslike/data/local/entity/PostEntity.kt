@@ -6,8 +6,7 @@ import com.iyehuda.feelslike.data.model.Post
 
 @Entity(tableName = "posts")
 data class PostEntity(
-    @PrimaryKey
-    val id: String,
+    @PrimaryKey val id: String,
     val username: String,
     val weather: String,
     val temperature: Double,
@@ -16,9 +15,8 @@ data class PostEntity(
     val userId: String,
     val latitude: Double,
     val longitude: Double,
-    val locationString: String?,
     val createdAt: Long,
-    val isSync: Boolean = false // To track if the post is synced with Firebase
+    val isSync: Boolean = false
 ) {
     fun toPost(): Post = Post(
         id = id,
@@ -30,7 +28,6 @@ data class PostEntity(
         userId = userId,
         latitude = latitude,
         longitude = longitude,
-        locationString = locationString,
         createdAt = createdAt
     )
 
@@ -45,9 +42,8 @@ data class PostEntity(
             userId = post.userId,
             latitude = post.latitude,
             longitude = post.longitude,
-            locationString = post.locationString,
             createdAt = post.createdAt,
             isSync = isSync
         )
     }
-} 
+}
