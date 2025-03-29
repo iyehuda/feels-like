@@ -73,12 +73,24 @@
         <action
             android:id="@+id/action_edit_profile"
             app:destination="@id/edit_profile_screen" />
+        <action
+            android:id="@+id/action_edit_post"
+            app:destination="@id/edit_post_screen" />
     </fragment>
     <fragment
         android:id="@+id/edit_profile_screen"
         android:name="com.iyehuda.feelslike.ui.editprofile.EditProfileFragment"
         android:label="Edit Profile"
         tools:layout="@layout/fragment_edit_profile" />
+
+    <fragment
+        android:id="@+id/edit_post_screen"
+        android:name="com.iyehuda.feelslike.ui.editpost.EditPostFragment"
+        android:label="Edit Post">
+        <argument
+            android:name="postId"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/home_screen"

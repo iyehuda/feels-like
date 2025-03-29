@@ -32,4 +32,7 @@ interface PostDao {
 
     @Query("SELECT * FROM posts WHERE username = :username ORDER BY createdAt DESC")
     fun getPostsByUsername(username: String): Flow<List<PostEntity>>
+
+    @Query("SELECT * FROM posts WHERE id = :postId")
+    suspend fun getPostById(postId: String): PostEntity?
 } 

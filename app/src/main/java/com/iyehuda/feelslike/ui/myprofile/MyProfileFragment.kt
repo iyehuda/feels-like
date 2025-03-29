@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.iyehuda.feelslike.R
 import com.iyehuda.feelslike.data.model.UserDetails
@@ -58,7 +59,15 @@ class MyProfileFragment : BaseFragment<FragmentMyProfileBinding>() {
     }
 
     private fun setupRecyclerView() {
-        postAdapter = PostAdapter(::resolveLocation, viewModel::getUserProfilePicture)
+        postAdapter = PostAdapter(
+            resolveLocation = ::resolveLocation,
+            loadUserProfilePicture = viewModel::getUserProfilePicture,
+            isProfileView = true,
+            onEditClick = { post ->
+                val action = MyProfileFragmentDirections.actionEditPost(post.id)
+                findNavController().navigate(action)
+            }
+        )
         binding.userPostsRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = postAdapter
